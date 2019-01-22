@@ -1,0 +1,38 @@
+{
+  "name": "merge-change",
+  "version": "0.0.1",
+  "description": "Deep merge two or more objects and optionality doing change operations like $set, $unset, $leave, $pull, $push",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node ./node_modules/jest/bin/jest.js --runInBand --verbose --forceExit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VladimirShestakov/query.rest.js.git"
+  },
+  "keywords": [
+    "query.rest",
+    "rest",
+    "node.js",
+    "mongodb"
+  ],
+  "author": "Vladimir Shestakov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/VladimirShestakov/query.rest.js"
+  },
+  "homepage": "https://github.com/VladimirShestakov/query.rest.js#readme",
+  "dependencies": {
+    "escape-string-regexp": "^1.0.5",
+    "eslint": "^5.12.1",
+    "lodash.isequal": "^4.5.0",
+    "moment": "^2.23.0",
+    "query-string": "^6.2.0"
+  },
+  "devDependencies": {
+    "expect": "^23.6.0",
+    "jest": "^23.6.0",
+    "supertest": "^3.4.1"
+  }
+}
