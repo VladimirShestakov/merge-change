@@ -1,5 +1,11 @@
 # merge-change
-Deep merge two or more objects and optionality doing change operations like `$set`, `$unset`, `$leave`, `$pull`, `$push`
+
+Deep merge two or more objects (and any other types) with optionality doing change operations like `$set`, `$unset`, `$leave`.
+
+Merging can be of three modes:
+- `mc.merge()` merge with deep cloning without changing the sources objects. Great for creating or expanding objects from etalon.
+- `mc.patch()` merge with mutation of the source objects. Nice for patchig. New instances will not creating.
+- `mc.update()` immutable merge - create new instances only if have changes. Nice for state management.
 
 ## Install
 
@@ -13,52 +19,74 @@ $ npm install --save merge-change
 
 ```js
 const mc = require('merge-change');
-const result = mc(
-  {a: {one: true, two: 2}}, 
-  {a: {three: 3, $unset: 'one'}}
+
+// Create new object with adding "a.three" and deleting "a.one"
+const result = mc.merge(
+  { a: {one: true, two: 2} }, 
+  { a: {three: 3, $unset: 'one'} }
 );
+
 console.log(result);
 //=> { a: { two: 2,  three: 3} }
 ```
 
-### Configure
+## Configure
 
-#### `.canMerge(object)`
+You can declare function for merge custom types (or override default logic).
 
-Declare function for check, do or not to do merge. By default not merge Data, Regex, Null.
+`mc.addons.merge<Type><Type> = function(first, second, mode){}`
 
-#### `.mergeArray(first, second)`
+`<Type> - Number, String, Boolean, Object, Array, Date, RegExp, Function, Undefined, Null, Symbol, Set, Map and other system and custom constructor names`
+ 
+For example, if you need union array, you can declare custom function for merge array with array. 
+Default the first array is replaced by the second.
 
-If you need merge array (union), you can declare custom merge function for arrays. By default 
-array resets.
+```
+mc.addons.mergeArrayArray = function(first, second, mode){
+  return [...first, ...second]
+};
+```
+
+## Merge methods
+
 
 ### Merge
 
-Deep merge two or more object. Create new object.
+Deep merge two or more object. Creating new object.
 
 ```
-const result = mc(object1, object2, object3);
+const result = mc.merge(object1, object2, object3, ...);
 ```
 
-### Clone
+### Patch
 
-Deep clone with one arguments
+Merge with mutation of the source objects. Nice for patchig. New instances will not creating.
 
 ```
-const result = mc(object);
+const result = mc.patch(object1, object2, object3, ...);
 ```
 
-### Change
+### Update
 
-For change result use declarative operations in second or next arguments. Operation can
-combine with object attributes. Syntax like mongodb.
+Merge without mutations (immutable) - create new instances only if have changes. Nice for state management (redux reducers)
+
+```
+const result = mc.update(object1, object2, object3, ...);
+```
+
+## Change operators
+
+When merging objects, you can perform delete and replace properties at the same time.
+For change result use declarative operations in second or next arguments. Supported in all merge methods (modes).
+The syntax is similar to mongodb.
 
 #### `$set`
 
-Set attribute without union with some attribute in preview objects
+Set attribute without union with some attribute in preview objects or array elements.
+Fields keys can be path for nested.
 
 ```js
-const result = mc(
+const result = mc.merge(
   {
     a: {
       one: 1, 
@@ -69,26 +97,32 @@ const result = mc(
     $set: {
       a: {
         three: 3
-      }
+      },
+      'a.two': 20
     }
   }
 );
 console.log(result);
 ```
+
+Result
 ```json
 {
   "a": {
+    "one": 1, 
+    "two": 20,
     "three": 3
   }
 }
 ```
+
 
 #### `$unset`
 
 Unset attribute in preview objects by name (or path)
 
  ```js
- const result = mc(
+ const result = mc.merge(
    {
      a: {
        one: 1, 
@@ -96,13 +130,13 @@ Unset attribute in preview objects by name (or path)
      }
    }, 
    {
-     a: {
-       $unset: ['two']
-     }
+     $unset: ['a.two']
    }
  );
  console.log(result);
  ```
+
+Result
  ```json
  {
    "a": {
@@ -139,17 +173,24 @@ Leave attribute in preview objects by name (or path)
    }
  }
  ```
+
+## Utils
+
+```js
+const utils = require('merge-change').utils;
+```
+### .type(value): String
+
+Get real type of any value
+
+```
+console.log(utils.type(null)) => 'Null'
+console.log(utils.type(true)) => 'Boolean'
+console.log(utils.type(new ObjectId())) => 'ObjectID'
+...
+```
  
-#### `$pull`
+## License
 
-Pull elements from array attribute
-
-#### `$push`
-
-Push elements to array attribute
-
-
-### License
-
-Copyright © 2018, [VladimirShestakov](https://github.com/VladimirShestakov).
+Copyright © 2020, [VladimirShestakov](https://github.com/VladimirShestakov).
 Released under the [MIT License](LICENSE).
