@@ -3,13 +3,27 @@ const mc = require('../index.js');
 describe('merge', () => {
 
   test('custom merge array', () => {
-    mc.addons.mergeArrayArray = function(first, second){
-      return [...first]
+    mc.addons.mergeArrayArray = function(first, second, mode){
+      // merge mode - creaete new array with deep clone
+      if (mode === 'merge'){
+        return first.concat(second).map(item => mc.merge(undefined, item));
+      }
+      // patch mode - mutate first array
+      if (mode === 'patch'){
+        first.splice(first.length, 0, ...second);
+        return first;
+      }
+      // update mode - return first array if second is empty, or create new without clone
+      if (second.length === 0){
+        return first;
+      } else {
+        return first.concat(second);
+      }
     };
     const obj1 = {a: 1, b: [1,2,3]};
     const obj2 = {a: 2, b: [3,4,5], c: 3};
-    const result = mc.merge(obj1, obj2);
-    expect(result).toEqual({a:2, b: [1,2,3], c: 3});
+    const result = mc.update(obj1, obj2);
+    expect(result).toEqual({a:2, b: [1,2,3,3,4,5], c: 3});
   });
 
   test('default', () => {

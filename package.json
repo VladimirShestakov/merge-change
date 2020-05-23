@@ -1,7 +1,7 @@
 {
   "name": "merge-change",
-  "version": "1.0.3",
-  "description": "Deep merge two or more objects and optionality doing change operations like $set, $unset, $leave",
+  "version": "1.0.4",
+  "description": "Deep merge objects and other types with optionality doing change operations like $set, $unset, $leave",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -23,7 +23,7 @@
     "config",
     "util",
     "compose",
-    " make",
+    "make",
     "create",
     "build",
     "clone",
@@ -42,7 +42,7 @@
   "homepage": "https://github.com/VladimirShestakov/merge-change.git#readme",
   "dependencies": {},
   "devDependencies": {
-    "eslint": "^5.12.1",
-    "jest": "^23.6.0"
+    "eslint": "^7.1.0",
+    "jest": "^26.0.1"
   }
 }
