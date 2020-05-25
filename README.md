@@ -35,26 +35,28 @@ console.log(result);
 
 ### Merge
 
-Deep merge two or more object. Creating new object.
+Deep merge two or more values. Creating new instance with deep cloning.
 
 ```js
-const result = mc.merge(object1, object2, object3, ...);
+const result = mc.merge(value1, value2, ...values);
 ```
 
 ### Patch
 
-Merge with mutation of the source objects. Nice for patching. New instances will not creating.
+Merge with mutation of the target values. Nice for patching. New instances will not creating.
 
 ```js
-const result = mc.patch(object1, object2, object3, ...);
+const result = mc.patch(target, patch1, ...patches);
 ```
-
+```js
+console.log(result === target); // => true
+```
 ### Update
 
 Merge without mutations (immutable) - create new instances only if have changes. Nice for state management (redux reducers)
 
 ```js
-const result = mc.update(object1, object2, object3, ...);
+const result = mc.update(source, change1, ...changes);
 ```
 
 ## Change operators
