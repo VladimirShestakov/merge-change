@@ -2,7 +2,7 @@
  * Utils for change object
  */
 const utils = {
-  unset: (obj, path) => {
+  unset: (obj, path, separator = '.') => {
     if (typeof path === 'number') {
       path = [path];
     }
@@ -13,7 +13,7 @@ const utils = {
       return obj;
     }
     if (typeof path === 'string') {
-      return utils.unset(obj, path.split('.'));
+      return utils.unset(obj, utils.splitPath(path, separator));
     }
 
     const currentPath = path[0];
@@ -30,9 +30,9 @@ const utils = {
     return obj;
   },
 
-  get: (obj, path, defaultValue) => {
+  get: (obj, path, defaultValue, separator = '.') => {
     if (typeof path === 'string') {
-      path = path.split('.');
+      path = utils.splitPath(path, separator);
     }
     if (typeof path === 'number') {
       path = [path];
@@ -46,35 +46,51 @@ const utils = {
     return utils.get(obj[path[0]], path.slice(1), defaultValue);
   },
 
-  set: (obj, path, value, doNotReplace) => {
+  set: (obj, path, value, doNotReplace, separator = '.') => {
     if (typeof path === 'number') {
       path = [path];
     }
-    if (!path || path.length === 0) {
+    if (!path || !path.length) {
       return obj;
     }
-    if (typeof path === 'string') {
-      return utils.set(obj, path.split('.'), value, doNotReplace);
+    if (!Array.isArray(path)) {
+      return utils.set(obj, utils.splitPath(path, separator), value, doNotReplace);
     }
     const currentPath = path[0];
     const currentValue = obj[currentPath];
     if (path.length === 1) {
-      if (currentValue === void 0 || !doNotReplace) {
+      // Если последний элемент пути, то установка значения
+      if (!doNotReplace || currentValue === void 0) {
         obj[currentPath] = value;
       }
       return currentValue;
     }
-
+    // Если путь продолжается, а текущего элемента нет, то создаётся пустой объект
     if (currentValue === void 0) {
-      //check if we assume an array
-      if (typeof path[1] === 'number') {
-        obj[currentPath] = [];
-      } else {
+      // //check if we assume an array
+      // if (typeof path[1] === 'number') {
+      //   obj[currentPath] = [];
+      // } else {
         obj[currentPath] = {};
-      }
+      // }
     }
+    return utils.set(obj[currentPath], path.slice(1), value, doNotReplace, separator);
+  },
 
-    return utils.set(obj[currentPath], path.slice(1), value, doNotReplace);
+  splitPath: (path, separator = '.') => {
+    if (typeof path === 'string'){
+      if (path.substr(0, separator.length) === separator){
+        path = path.substr(separator.length);
+      }
+      if (path.substr(path.length - separator.length) === separator){
+        path = path.substr(0, path.length - separator.length);
+      }
+      path = path.split(separator).map(name => {
+        const index = Number(name);
+        return !Number.isNaN(index) && index !== null ? index : name;
+      })
+    }
+    return path;
   },
 
   equal: function(first, second){
