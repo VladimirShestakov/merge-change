@@ -1,6 +1,6 @@
 {
   "name": "merge-change",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Deep merge objects and other types with optionality doing change operations like $set, $unset, $leave",
   "main": "index.js",
   "scripts": {

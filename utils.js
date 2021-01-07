@@ -104,10 +104,55 @@ const utils = {
    * @returns {string|*}
    */
   type: function (value) {
-    if (value && value.constructor){
-      return value.constructor.name;
+    if (value === null) {
+      return 'Null';
+    }
+    if (typeof value === 'undefined'){
+      return 'Undefined'
+    }
+    return Object.getPrototypeOf(value).constructor.name;
+  },
+
+  typeList(value){
+    let result = [];
+    if (value === null){
+      result.push('Null');
+    } else
+    if (typeof value === 'undefined'){
+      result.push('Undefined')
     } else {
-      return Object.prototype.toString.call(value).slice(8, -1);
+      function getClass(value) {
+        if (value && value.constructor) {
+          result.push(value.constructor.name);
+          getClass(Object.getPrototypeOf(value));
+        }
+      }
+      getClass(Object.getPrototypeOf(value));
+    }
+    return result;
+  },
+
+  /**
+   * Проверка принадлежности к классу по названию класса
+   * @param value Значение для проверки
+   * @param className Название типа  (типа, конструктора)
+   * @returns {boolean}
+   */
+  instanceof(value, className){
+    if (value === null){
+      return className === 'Null';
+    } else {
+      function getClass(value) {
+        if (value && value.constructor) {
+          if (className === value.constructor.name){
+            return true;
+          }
+          return getClass(Object.getPrototypeOf(value));
+        } else {
+          return false;
+        }
+      }
+      return getClass(Object.getPrototypeOf(value));
     }
   }
 };
