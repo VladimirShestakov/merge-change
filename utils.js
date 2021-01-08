@@ -54,7 +54,7 @@ const utils = {
       return obj;
     }
     if (typeof path === 'string') {
-      const pathArray = path.split('.')
+      const pathArray = path.split('.');
       if (utils.isPrototypePolluted(pathArray[0]))
         return;
       return utils.set(obj, pathArray, value, doNotReplace);
