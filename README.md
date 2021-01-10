@@ -223,7 +223,7 @@ Result
 
 You can declare function for merge custom types (or override default logic). Returns previous merge method.
 
-`mc.addMerge(type1, type2, callback)` (first, second, kind) => {...}`
+`mc.addMerge(type1, type2, callback)`
 
 - `type1, type2` - constructor name of the first and second values: `Number, String, Boolean, Object, Array, Date, RegExp, Function, Undefined, Null, Symbol, Set, Map` and other system and custom constructor names
 - `callback` - merge function with argument: (first, second, kind)
@@ -260,10 +260,10 @@ mc.addMerge('Array', 'Array', previous);
 
 You can declare function for declarative operation (or override default logic). Returns previous operation method.
 
-`mc.addMerge(name, callback)` (first, second, kind) => {...}`
+`mc.addMerge(name, callback)`
 
 - `name` - operation name, for example "$concat"
-- `callback` - operation function with argument: (source, params)
+- `callback` - operation function with argument: (source, params). Return new value or source.
     - `source` - the value in which the operation is defined (`source: {$concat: params}`)
     - `params` - value of operator (`$concat: params`)
 
