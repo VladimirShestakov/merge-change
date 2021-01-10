@@ -46,6 +46,15 @@ const utils = {
     return utils.get(obj[path[0]], path.slice(1), defaultValue);
   },
 
+  /**
+   * Установка значения по пути. Если в obj путь не найден, то будут созданы соотв сойства
+   * @param obj
+   * @param path
+   * @param value
+   * @param doNotReplace
+   * @param separator
+   * @returns {*}
+   */
   set: (obj, path, value, doNotReplace, separator = '.') => {
     if (typeof path === 'number') {
       path = [path];
@@ -77,6 +86,12 @@ const utils = {
     return utils.set(obj[currentPath], path.slice(1), value, doNotReplace, separator);
   },
 
+  /**
+   * Раздение пути на элементы массива с игнором (обрезкой) разделителя вначале и конце строки
+   * @param path {string} Путь для разделения
+   * @param separator {string} Разделитель, например слэш
+   * @returns {(number|string)[]}
+   */
   splitPath: (path, separator = '.') => {
     if (typeof path === 'string'){
       if (path.substr(0, separator.length) === separator){
@@ -113,6 +128,11 @@ const utils = {
     return Object.getPrototypeOf(value).constructor.name;
   },
 
+  /**
+   * Все типы значения по цепочке их наследования
+   * @param value
+   * @returns {Array<string>}
+   */
   typeList(value){
     let result = [];
     if (value === null){

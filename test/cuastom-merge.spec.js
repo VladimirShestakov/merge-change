@@ -1,10 +1,10 @@
 const mc = require('../index.js');
 
-describe('merge', () => {
+describe('Custom merge', () => {
 
   test('custom merge array', () => {
     mc.addons.mergeArrayArray = function(first, second, mode){
-      // merge mode - creaete new array with deep clone
+      // merge mode - create new array with deep clone
       if (mode === 'merge'){
         return first.concat(second).map(item => mc.merge(undefined, item));
       }

@@ -420,12 +420,33 @@ MergeChange.prototype.operation$push = function(source, params) {
   const paths = Object.keys(params);
   for (const path of paths) {
     const value = params[path];
-    const array = this.get(source, path, []);
+    const array = utils.get(source, path, []);
     if (Array.isArray(array)) {
       array.push(value);
       utils.set(source, path, array);
     } else {
       throw new Error('Cannot push on not array');
+    }
+  }
+  return paths.length > 0;
+}
+
+/**
+ * Слияние элементов массива
+ * @param source
+ * @param params
+ * @returns {boolean}
+ */
+MergeChange.prototype.operation$concat = function(source, params) {
+  const paths = Object.keys(params);
+  for (const path of paths) {
+    let value = params[path];
+    let array = utils.get(source, path, []);
+    if (Array.isArray(array)) {
+      array = array.concat(value);
+      utils.set(source, path, array);
+    } else {
+      throw new Error('Cannot concat on not array');
     }
   }
   return paths.length > 0;

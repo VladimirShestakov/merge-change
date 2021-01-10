@@ -65,7 +65,7 @@ When merging objects, you can perform delete and replace properties at the same 
 For change result use declarative operations in second or next arguments. Supported in all merge methods (modes).
 The syntax is similar to mongodb.
 
-#### `$set`
+### `$set`
 
 Set attribute without union with some attribute in preview objects or array elements.
 Fields keys can be path for nested.
@@ -102,7 +102,7 @@ Result
 ```
 
 
-#### `$unset`
+### `$unset`
 
 Unset attribute in preview objects by name (or path)
 
@@ -130,7 +130,7 @@ Result
  }
  ```
 
-#### `$leave`
+### `$leave`
 
 Leave attribute in preview objects by name (or path)
 
@@ -151,13 +151,80 @@ Leave attribute in preview objects by name (or path)
  );
  console.log(result);
  ```
- ```json
+
+Result
+```json
  {
    "a": {
      "two": 2
    }
  }
  ```
+
+### `$push`
+
+Push one value to source array
+
+The source property (in first object) must be an array.
+
+ ```js
+ const result = mc(
+   // First object
+   {
+     prop1: ['a', 'b'],
+     prop2: ['a', 'b'],
+   }, 
+   // Merge    
+   {
+     $push: {
+       prop1: ['c', 'd'],
+       prop2: {x: 'c'}
+     },
+   }
+ );
+ console.log(result);
+ ```
+
+Result
+ ```json
+ {
+   "prop1": ["a", "b", ["c", "d"]],
+   "prop2": ["a", "b", {"x": "c"}]
+ }
+ ```
+
+### `$concat`
+
+Merge arrays.
+
+The source property (in first object) must be an array. Merges can be an array or any other type.
+
+ ```js
+ const result = mc(
+   // First object
+   {
+     prop1: ['a', 'b'],
+     prop2: ['a', 'b'],
+   }, 
+   // Merge    
+   {
+     $concat: {
+       prop1: ['c', 'd'],
+       prop2: {x: 'c'}
+     },
+   }
+ );
+ console.log(result);
+ ```
+
+Result
+ ```json
+ {
+   "prop1": ["a", "b", "c", "d"],
+   "prop2": ["a", "b", {"x": "c"}]
+ }
+ ```
+
 
 ## Configure
 
@@ -198,17 +265,28 @@ mc.addons.mergeArrayArray = function(first, second, mode){
 ```js
 const utils = require('merge-change').utils;
 ```
-### .type(value): String
+### .type(value:any): string
 
 Get real type of any value
 
 ```js
-console.log(utils.type(null)); // => 'Null'
-console.log(utils.type(true)); // => 'Boolean'
-console.log(utils.type(new ObjectId())); // => 'ObjectID'
-...
+utils.type(null); // => 'Null'
+utils.type(true); // => 'Boolean'
+utils.type(new ObjectId()); // => 'ObjectID'
+```
+
+### .instanceof(value:any, className: string): boolean
+
+Checking instance of class. className is string (not constructor)
+
+```js
+utils.instanceof(100, 'Number'); // => true
+utils.instanceof(new MyClass(), 'MyClass'); // => true
+utils.instanceof(new MyClass(), 'Object'); // => true
 ```
  
+...see other utils in source [utils.js](./utils.js)
+
 ## License
 
 Copyright © 2020, [VladimirShestakov](https://github.com/VladimirShestakov).
