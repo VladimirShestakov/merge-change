@@ -6,11 +6,6 @@ Values of other types are replaced, but you can customize merging between specif
 Also, you can use declarative operations to specific merge like `unset`, `leave`, `push`.
 For example to remove some properties, to replace "plain objects", to concat arrays.
 
-Merging can be of three kinds (methods):
-- `mc.merge(value1, value2, ...)` 
-- `mc.patch(source, patch1, ...)` 
-- `mc.update(source, update1, ...)` 
-
 ## Install
 
 Install with [npm](https://www.npmjs.com/):
