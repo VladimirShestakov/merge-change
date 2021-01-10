@@ -1,12 +1,15 @@
 # merge-change
 
-Deep merge/patch/update objects and any other types. With declarative operations for specific changes like `unset`, `leave`, `push`.
-By default merge working for "plain objects". Values of other types are replaced. But you can customize merging between specific types.
+Simple library for deep merge (or patch or immutable update) objects and other types.
+By default, merge works for "plain objects".
+Values of other types are replaced, but you can customize merging between specific types.
+Also, you can use declarative operations to specific merge like `unset`, `leave`, `push`.
+For example to remove some properties, to replace "plain objects", to concat arrays.
 
-Merging can be of three modes:
-- `mc.merge()` merge with deep cloning without changing the sources objects. Great for creating or extending objects from the etalon.
-- `mc.patch()` merge with mutation of the source objects. Nice for patching. New instances will not create.
-- `mc.update()` immutable merge - create new instances only if have changes. Nice for state management.
+Merging can be of three kinds (methods):
+- `mc.merge()` merge with deep cloning without changing the source objects. Great for creating or extending objects from the example.
+- `mc.patch()` merge with mutation of the source objects. Nice for patching. New instances will not be created.
+- `mc.update()` immutable merge - create new instances only if there are diffs. Nice for state management.
 
 ## Install
 

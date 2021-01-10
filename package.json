@@ -1,7 +1,7 @@
 {
   "name": "merge-change",
-  "version": "1.3.0",
-  "description": "Deep merge objects and other types with optionality doing change operations like $set, $unset, $leave",
+  "version": "1.3.1",
+  "description": "Simple library for deep merge (or patch or immutable update) objects and other types. Use declarative operations for specific merge (for example to remove properties). Customize merging between specific types.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
