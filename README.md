@@ -1,6 +1,7 @@
 # merge-change
 
-Deep merge objects and any other types with optionality doing change operations like `$set`, `$unset`, `$leave`.
+Deep merge/patch/update objects and any other types. With declarative operations for specific changes like `unset`, `leave`, `push`.
+By default merge working for "plain objects". Values of other types are replaced. But you can customize merging between specific types.
 
 Merging can be of three modes:
 - `mc.merge()` merge with deep cloning without changing the sources objects. Great for creating or extending objects from the etalon.
