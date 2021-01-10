@@ -1,15 +1,15 @@
 # merge-change
 
-Simple library for deep merge (or patch or immutable update) objects and other types.
+Simple library for deep merge of objects and other types (also for patch or immutable update) .
 By default, merge works for "plain objects".
 Values of other types are replaced, but you can customize merging between specific types.
 Also, you can use declarative operations to specific merge like `unset`, `leave`, `push`.
 For example to remove some properties, to replace "plain objects", to concat arrays.
 
 Merging can be of three kinds (methods):
-- `mc.merge()` merge with deep cloning without changing the source objects. Great for creating or extending objects from the example.
-- `mc.patch()` merge with mutation of the source objects. Nice for patching. New instances will not be created.
-- `mc.update()` immutable merge - create new instances only if there are diffs. Nice for state management.
+- `mc.merge(value1, value2, ...)` 
+- `mc.patch(source, patch1, ...)` 
+- `mc.update(source, update1, ...)` 
 
 ## Install
 
@@ -19,8 +19,16 @@ Install with [npm](https://www.npmjs.com/):
 $ npm install --save merge-change
 ```
 
-## Usage
+## API
 
+### Merge
+
+Merge with deep cloning without changing the source objects. Great for creating or extending objects from the example (source).
+
+```js
+const result = mc.merge(source, ...values);
+```
+example
 ```js
 const mc = require('merge-change');
 
@@ -34,45 +42,33 @@ console.log(result);
 //=> { a: { two: 2,  three: 3} }
 ```
 
-## Merge methods
-
-
-### Merge
-
-Deep merge two or more values. Creating new instance with deep cloning.
-
-```js
-const result = mc.merge(value1, value2, ...values);
-```
-
 ### Patch
 
-Merge with mutation of the target values. Nice for patching. New instances will not creating.
+Merge with mutation of the source objects. Nice for patching. New instances will not be created.
 
 ```js
-const result = mc.patch(target, patch1, ...patches);
+const result = mc.patch(source, ...patches);
 ```
 ```js
-console.log(result === target); // => true
+console.log(result === source); // => true
 ```
 ### Update
 
-Merge without mutations (immutable) - create new instances only if have changes. Nice for state management (redux reducers)
+Immutable merge - create new instances only if there are diffs (also in inner properties). Nice for state management.
 
 ```js
-const result = mc.update(source, change1, ...changes);
+const result = mc.update(source, ...changes);
 ```
 
-## Change operators
+## Declarative operators
 
 When merging objects, you can perform delete and replace properties at the same time.
-For change result use declarative operations in second or next arguments. Supported in all merge methods (modes).
+For change result use declarative operations in second or next arguments. Supported in all merge methods.
 The syntax is similar to mongodb.
 
 ### `$set`
 
-Set attribute without union with some attribute in preview objects or array elements.
-Fields keys can be path for nested.
+To set (or replace) property without deep merge.
 
 ```js
 const result = mc.merge(
@@ -87,7 +83,7 @@ const result = mc.merge(
       a: {
         three: 3
       },
-      'a.two': 20
+      'a.two': 20 // Fields keys can be path.
     }
   }
 );
@@ -108,7 +104,7 @@ Result
 
 ### `$unset`
 
-Unset attribute in preview objects by name (or path)
+To unset properties by name (or path)
 
  ```js
  const result = mc.merge(
@@ -136,7 +132,7 @@ Result
 
 ### `$leave`
 
-Leave attribute in preview objects by name (or path)
+To leave properties by name (or path). All other properties will be removed.
 
  ```js
  const result = mc(
@@ -167,9 +163,7 @@ Result
 
 ### `$push`
 
-Push one value to source array
-
-The source property (in first object) must be an array.
+To push one value to the array property. The source property must be an array.
 
  ```js
  const result = mc(
@@ -199,9 +193,9 @@ Result
 
 ### `$concat`
 
-Merge arrays.
+To union arrays.
 
-The source property (in first object) must be an array. Merges can be an array or any other type.
+The source property must be an array. The property in secondary arguments may not be an array.
 
  ```js
  const result = mc(
@@ -230,7 +224,7 @@ Result
  ```
 
 
-## Configure
+## Customize merge
 
 You can declare function for merge custom types (or override default logic).
 
@@ -240,9 +234,8 @@ You can declare function for merge custom types (or override default logic).
 - `first` - first value for merge
 - `second` - second value for merge
 - `mode` - name of merging method, such as "merge", "patch", "update". 
- 
-For example, if you need to union arrays, you can declare custom function for merge array with array. 
-By default, the not object value replacing by the second value (only objects will be merging).
+
+For example, if you always need to union arrays, you can declare method to merge array with array. 
 
 ```js
 mc.addons.mergeArrayArray = function(first, second, mode){
