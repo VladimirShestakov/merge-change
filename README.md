@@ -223,27 +223,27 @@ Result
 
 You can declare function for merge custom types (or override default logic).
 
-`mc.addons.merge<Type><Type> = function(first, second, mode){}`
+`mc.addons.merge{Type}{Type} = function(first, second, kind){...}`
 
-- `<Type>` - type of the first and second values: `Number, String, Boolean, Object, Array, Date, RegExp, Function, Undefined, Null, Symbol, Set, Map` and other system and custom constructor names
+- `{Type}` - type (constructor name) of the first and second values: `Number, String, Boolean, Object, Array, Date, RegExp, Function, Undefined, Null, Symbol, Set, Map` and other system and custom constructor names
 - `first` - first value for merge
 - `second` - second value for merge
-- `mode` - name of merging method, such as "merge", "patch", "update". 
+- `kind` - name of merging method, such as "merge", "patch", "update". 
 
 For example, if you always need to union arrays, you can declare method to merge array with array. 
 
 ```js
-mc.addons.mergeArrayArray = function(first, second, mode){
-  // merge mode - creaete new array with deep clone
-  if (mode === 'merge'){
+mc.addons.mergeArrayArray = function(first, second, kind){
+  // merge - creaete new array with deep clone
+  if (kind === 'merge'){
     return first.concat(second).map(item => mc.merge(undefined, item));
   }
-  // patch mode - mutate first array
-  if (mode === 'patch'){
+  // patch - mutate first array
+  if (kind === 'patch'){
     first.splice(first.length, 0, ...second);
     return first;
   }
-  // update mode - return first array if second is empty, or create new without clone
+  // update - return first array if second is empty, or create new without clone
   if (second.length === 0){
     return first;
   } else {
