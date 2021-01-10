@@ -1,27 +1,30 @@
 const utils = require('./utils.js');
 
-const MODES = {
-  MERGE: 'merge',
-  PATCH: 'patch',
-  UPDATE: 'update'
+/**
+ * Kinds of merge method
+ * @type {{MERGE: string, UPDATE: string, PATCH: string}}
+ */
+const KINDS = {
+  MERGE: 'merge', // cloning
+  PATCH: 'patch', // change in source value
+  UPDATE: 'update' //immutable update (new value if there are diffs)
 }
 
+/**
+ * Module will export single instance of MergeChange
+ * @returns {MergeChange}
+ * @constructor
+ */
 function MergeChange() {
   return this;
 }
 
 /**
- * Пользовательские переопредления методов слияния
- * @type {{}}
+ * Factory method. Looks for suitable methods for type merging
+ * Closure on merge kind to handle any number of values
+ * @param kind {String} Kind of merge from KINDS
  */
-MergeChange.prototype.addons = {};
-
-/**
- * Фабрика методов слияния
- * Замыкание на режим слияния, чтобы обрабатывать любое количество значений
- * @param mode {String} Режимы слияния MODES
- */
-MergeChange.prototype.prepareMerge = function(mode) {
+MergeChange.prototype.prepareMerge = function(kind) {
   return (...values) => {
     return values.reduce((first, second) => {
         const firstType = utils.type(first);
@@ -34,7 +37,7 @@ MergeChange.prototype.prepareMerge = function(mode) {
         ]
         for (const action of actions) {
           if (this[action]) {
-            return this[action](first, second, mode);
+            return this[action](first, second, kind);
           }
         }
         return first;
@@ -44,236 +47,204 @@ MergeChange.prototype.prepareMerge = function(mode) {
 }
 
 /**
- * Создание полностью нового объекта слиянием базового объекта и модификаций.
+ * Merge with cloning
  * Переданные объекты не мутируются.
  * Можно использовать для клонирования.
  * @type {function(...values)}
  */
-MergeChange.prototype.merge = MergeChange.prototype.prepareMerge(MODES.MERGE);
+MergeChange.prototype.merge = MergeChange.prototype.prepareMerge(KINDS.MERGE);
 
 /**
- * Мутабельное слияние модификаций в базовый объект и его возврат.
+ * Merging patches
  * Гарантируется сохранение ссылочных связей.
  * Происходит мутирование переданных значений кроме последнего.
  * @type {function(...values)}
  */
-MergeChange.prototype.patch = MergeChange.prototype.prepareMerge(MODES.PATCH);
+MergeChange.prototype.patch = MergeChange.prototype.prepareMerge(KINDS.PATCH);
 
 /**
- * Немутабельное слияение.
+ * Immutable merge
  * Если есть изменения, то возвращется новый объект. Если изменений нет, то возвращается базовый объект.
  * Правило работает на всех уровнях вложенности.
  * @type {function(...values)}
  */
-MergeChange.prototype.update = MergeChange.prototype.prepareMerge(MODES.UPDATE);
+MergeChange.prototype.update = MergeChange.prototype.prepareMerge(KINDS.UPDATE);
 
 /**
- * Слияние любых значений.
+ * Merge Any with Any
+ * No merge required
+ * @todo On kind "merge" we need cloning first argument?
  * По сути отсутсвие слияние, так как неизвестно как его делать.
  * Возвращается всегда новое значение взамен текущему.
  * В режиме MERGE значение нужно склонировать.
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {*}
  */
-MergeChange.prototype.mergeAnyAny = function(first, second, mode){
-  if (this.addons.mergeAnyAny){
-    return this.addons.mergeAnyAny(first, second, mode)
-  }
-  return this[mode](undefined, second);
+MergeChange.prototype.mergeAnyAny = function(first, second, kind){
+  return this[kind](undefined, second);
 }
 
 /**
- * Слияние неопредленного типа с объектом.
- * Само слияние не выполняется, но в объекте могут быть указаны операции над значением - они выполняются
+ * Merge Any with plain object
+ * @todo No merge required, but may need to do declarative operations?
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {*}
  */
-// MergeChange.prototype.mergeAnyObject = function(first, second, mode){
-//   if (this.addons.mergeAnyObject){
-//     return this.addons.mergeAnyObject(first, second, mode)
-//   }
-//   return this[mode](undefined, second);
+// MergeChange.prototype.mergeAnyObject = function(first, second, kind){
+//   return this[kind](undefined, second);
 // }
 
 /**
- * Слияние значения неизвестного типа с несуществующим значением.
- * По факту возвращается текущее значение. Но в режиме MERGE его нужно склонировать
+ * Merge Any with undefined
+ * @todo On kind "merge" we need cloning first argument.
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {*}
  */
-MergeChange.prototype.mergeAnyUndefined = function(first, second, mode){
-  if (this.addons.mergeAnyUndefined){
-    return this.addons.mergeAnyUndefined(first, second, mode)
-  }
-  return this[mode](undefined, first);
+MergeChange.prototype.mergeAnyUndefined = function(first, second, kind){
+  return this[kind](undefined, first);
 }
 
 /**
- * Слияние любого нового значение к несуществующему.
- * Всегда возвращается новое значение.
+ * Merge undefined with any types.
+ * Always return second value
+ * @todo On kind "merge" we need cloning second argument.
  * В режиме MERGE значение нужно клонировать, но так как нет конкретики про тип - клонирование не выполняется.
  * Для реализации режима MERGE нужно определять методы на конкретный тип .mergeUndefined<type>()
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {*}
  */
-MergeChange.prototype.mergeUndefinedAny = function(first, second, mode){
-  if (this.addons.mergeUndefinedAny){
-    return this.addons.mergeUndefinedAny(first, second, mode)
-  }
+MergeChange.prototype.mergeUndefinedAny = function(first, second, kind){
   return second;
 }
 
 /**
- * Слияние даты к несуществующему значению.
+ * Merge undefined with Date
  * В режиме MERGE создаётся новый экземпляр даты
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {Date}
  */
-MergeChange.prototype.mergeUndefinedDate = function(first, second, mode){
-  if (this.addons.mergeUndefinedDate){
-    return this.addons.mergeUndefinedDate(first, second, mode)
-  }
-  return mode ===  MODES.MERGE ? new Date(second) : second;
+MergeChange.prototype.mergeUndefinedDate = function(first, second, kind){
+  return kind ===  KINDS.MERGE ? new Date(second) : second;
 }
 
 /**
- * Слияние Set к несуществующему значению.
+ * Merge undefined with Set
  * В режиме MERGE клонируется экземпляр Set
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {Set}
  */
-MergeChange.prototype.mergeUndefinedSet = function(first, second, mode){
-  if (this.addons.mergeUndefinedSet){
-    return this.addons.mergeUndefinedSet(first, second, mode)
-  }
-  return mode ===  MODES.MERGE ? new Set(second) : second;
+MergeChange.prototype.mergeUndefinedSet = function(first, second, kind){
+  return kind ===  KINDS.MERGE ? new Set(second) : second;
 }
 
 /**
- * Слияние Map к несуществующему значению.
+ * Merge undefined with Map
  * В режиме MERGE клонируется экземпляр Map
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {Map}
  */
-MergeChange.prototype.mergeUndefinedMap = function(first, second, mode){
-  if (this.addons.mergeUndefinedMap){
-    return this.addons.mergeUndefinedMap(first, second, mode)
-  }
-  return mode ===  MODES.MERGE ? new Map(second) : second;
+MergeChange.prototype.mergeUndefinedMap = function(first, second, kind){
+  return kind ===  KINDS.MERGE ? new Map(second) : second;
 }
 
 /**
- * Слияние WeekSet к несуществующему значению.
+ * Merge undefined with WeekSet
  * В режиме MERGE клонируется экземпляр WeekSet
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {WeekSet}
  */
-MergeChange.prototype.mergeUndefinedWeekSet = function(first, second, mode) {
-  if (this.addons.mergeUndefinedWeekSet){
-    return this.addons.mergeUndefinedWeekSet(first, second, mode)
-  }
-  return mode === MODES.MERGE ? new WeakSet(second) : second;
+MergeChange.prototype.mergeUndefinedWeekSet = function(first, second, kind) {
+  return kind === KINDS.MERGE ? new WeakSet(second) : second;
 }
 
 /**
- * Слияние WeekMap к несуществующему значению.
+ * Merge undefined with WeekMap
  * В режиме MERGE клонируется экземпляр WeekMap
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {WeekMap}
  */
-MergeChange.prototype.mergeUndefinedWeekMap = function(first, second, mode){
-  if (this.addons.mergeUndefinedWeekMap){
-    return this.addons.mergeUndefinedWeekMap(first, second, mode)
-  }
-  return mode ===  MODES.MERGE ? new WeakMap(second) : second;
+MergeChange.prototype.mergeUndefinedWeekMap = function(first, second, kind){
+  return kind ===  KINDS.MERGE ? new WeakMap(second) : second;
 }
 
 /**
- * Слияние массива к несуществующему значению.
+ * Merge undefined with array
  * В режиме MERGE клонируется экземпляр массима
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {Array}
  */
-MergeChange.prototype.mergeUndefinedArray = function(first, second, mode){
-  if (this.addons.mergeUndefinedArray){
-    return this.addons.mergeUndefinedArray(first, second, mode)
-  }
-  return mode ===  MODES.MERGE ? this.mergeArrayArray([], second, mode) : second;
+MergeChange.prototype.mergeUndefinedArray = function(first, second, kind){
+  return kind ===  KINDS.MERGE ? this.mergeArrayArray([], second, kind) : second;
 }
 
 /**
- * Слияние объекта к несуществующему значению.
- * Также выполняются оперции, если они есть в second
- * В режиме MERGE клонируется экземпляр объекта
+ * Merge undefined with plain object
+ * Также выполняются операции, если они есть в second
+ * В режиме MERGE клонируются экземпляр объекта
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {Object}
  */
-MergeChange.prototype.mergeUndefinedObject = function(first, second, mode){
-  if (this.addons.mergeUndefinedObject){
-    return this.addons.mergeUndefinedObject(first, second, mode)
-  }
-  return mode ===  MODES.MERGE ? this.mergeObjectObject({}, second, mode) : second;
+MergeChange.prototype.mergeUndefinedObject = function(first, second, kind){
+  return kind ===  KINDS.MERGE ? this.mergeObjectObject({}, second, kind) : second;
 }
 
 /**
- * Слияние объекта с объектом.
- * Также выполняются оперции, если они есть в second
+ * Merge plain object with plain object
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {Object}
  */
-MergeChange.prototype.mergeObjectObject = function(first, second, mode){
-  if (this.addons.mergeObjectObject){
-    return this.addons.mergeObjectObject(first, second, mode)
-  }
-  let result = mode === MODES.PATCH ? first : {};
+MergeChange.prototype.mergeObjectObject = function(first, second, kind){
+  let result = kind === KINDS.PATCH ? first : {};
   let resultField;
-  let isChange = mode === MODES.MERGE;
+  let isChange = kind === KINDS.MERGE;
   let operations = [];
   const keysFirst = Object.keys(first);
   const keysSecond = new Set(Object.keys(second));
   for (const key of keysFirst){
     if (key in second){
-      resultField = this[mode](first[key], second[key]);
+      resultField = this[kind](first[key], second[key]);
       keysSecond.delete(key);
     } else {
-      resultField = this[mode](first[key], undefined);
+      resultField = this[kind](first[key], undefined);
     }
     isChange = isChange || resultField !== first[key];
     result[key] = resultField;
   }
+  // find declarative operations
   for (const key of keysSecond){
     if (this.isOperation(key)){
       operations.push([key, second[key]]);
     } else {
-      resultField = this[mode](undefined, second[key]);
+      resultField = this[kind](undefined, second[key]);
       isChange = isChange || resultField !== first[key];
       result[key] = resultField;
     }
   }
+  // execute declarative operations
   for (const [operation, params] of operations){
     isChange = this.operation(result, operation, params);
   }
@@ -281,27 +252,38 @@ MergeChange.prototype.mergeObjectObject = function(first, second, mode){
 }
 
 /**
- * Слияние массива с массивом.
- * По умочланию возвращается второй массив
+ * Merge array with array
+ * Replace arrays - return second argument.
+ * On kind "merge" we cloning second argument.
  * @param first
  * @param second
- * @param mode
+ * @param kind
  * @returns {Array}
  */
-MergeChange.prototype.mergeArrayArray = function(first, second, mode){
-  if (this.addons.mergeArrayArray){
-    return this.addons.mergeArrayArray(first, second, mode)
-  }
-  if (mode === MODES.MERGE){
-    return second.map(item => this[mode](undefined, item));
+MergeChange.prototype.mergeArrayArray = function(first, second, kind){
+  if (kind === KINDS.MERGE){
+    return second.map(item => this[kind](undefined, item));
   }
   return second;
 }
 
+/**
+ * Checking if a declarative operation exists
+ * @param operation
+ * @param params
+ * @returns {boolean}
+ */
 MergeChange.prototype.isOperation = function(operation, params){
   return Boolean(this[`operation${operation}`]);
 }
 
+/**
+ * Execute declarative operation
+ * @param source
+ * @param operation
+ * @param params
+ * @returns {*}
+ */
 MergeChange.prototype.operation = function(source, operation, params){
   const method = `operation${operation}`;
   if (this[method]){
@@ -310,7 +292,7 @@ MergeChange.prototype.operation = function(source, operation, params){
 }
 
 /**
- * Установка свойств объекту или замена элементов массива
+ * $set
  * @param source
  * @param params Объект со свойствами, которые нужно добавить без слияния. Ключи свойств могут быть путями с учётом вложенности
  * @returns {boolean}
@@ -324,6 +306,7 @@ MergeChange.prototype.operation$set = function(source, params){
 }
 
 /**
+ * $unset
  * Удаление свойств объекта или элементов массива.
  * @param source
  * @param params Массив путей на удаляемые свойства. Учитывается вложенность
@@ -341,6 +324,7 @@ MergeChange.prototype.operation$unset = function(source, params){
 }
 
 /**
+ * $leave
  * Удаление всех свойств или элементов за исключением указанных
  * @param source
  * @param params Массив свойств, которые не надо удалять
@@ -387,6 +371,7 @@ MergeChange.prototype.operation$leave = function(source, params){
 }
 
 /**
+ * $pull
  * Удаление элементов по равенству значения
  * @param source
  * @param params
@@ -411,6 +396,7 @@ MergeChange.prototype.operation$pull = function(source, params){
 }
 
 /**
+ * $push
  * Добавление элемента
  * @param source
  * @param params
@@ -432,6 +418,7 @@ MergeChange.prototype.operation$push = function(source, params) {
 }
 
 /**
+ * $concat
  * Слияние элементов массива
  * @param source
  * @param params
@@ -453,6 +440,7 @@ MergeChange.prototype.operation$concat = function(source, params) {
 }
 
 /**
+ * @todo
  * Вычисление разницы между объектами.
  * Возвращается объект модификаций
  * @param prevObject
@@ -462,16 +450,34 @@ MergeChange.prototype.diff = function(prevObject, newObject){
 
 }
 
-MergeChange.prototype.instance = function(){
-  return new this.constructor();
+/**
+ * Add custom merge method
+ * @param type1 {String} Type of source value
+ * @param type2 {String} Type of secondary value
+ * @param callback {Function} Merge function with argument: (first, second, kind)
+ * @returns {*} The previous merge method
+ */
+MergeChange.prototype.addMerge = function(type1, type2, callback){
+  const method = `merge${type1}${type2}`;
+  const current = MergeChange.prototype[method];
+  MergeChange.prototype[method] = callback;
+  return current
 }
 
-// MergeChange.prototype.addons = function(callback){
-//   callback(MergeChange.prototype.addons);
-// }
-//
-// MergeChange.prototype.addons = function(callback){
-//   callback(MergeChange.prototype.addons);
-// }
+/**
+ * Add custom declarative operation
+ * @param name {String} Operation name
+ * @param callback {Function} Operation function with argument: (source, params)
+ * @returns {*} The previous operation method
+ */
+MergeChange.prototype.addOperation = function(name, callback){
+  if (name.substr(0,1)!=='$'){
+    name = '$' + name;
+  }
+  const method = `operation${name}`;
+  const current = MergeChange.prototype[method];
+  MergeChange.prototype[method] = callback;
+  return current
+}
 
 module.exports = new MergeChange();

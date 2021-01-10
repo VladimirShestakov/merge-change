@@ -2,8 +2,10 @@ const mc = require('../index.js');
 
 describe('Custom merge', () => {
 
+  let lastOp;
+
   test('custom merge array', () => {
-    mc.addons.mergeArrayArray = function(first, second, mode){
+    lastOp = mc.addMerge('Array', 'Array', function(first, second, mode){
       // merge mode - create new array with deep clone
       if (mode === 'merge'){
         return first.concat(second).map(item => mc.merge(undefined, item));
@@ -19,7 +21,7 @@ describe('Custom merge', () => {
       } else {
         return first.concat(second);
       }
-    };
+    });
     const obj1 = {a: 1, b: [1,2,3]};
     const obj2 = {a: 2, b: [3,4,5], c: 3};
     const result = mc.update(obj1, obj2);
@@ -27,7 +29,7 @@ describe('Custom merge', () => {
   });
 
   test('default', () => {
-    delete mc.addons.mergeArrayArray;
+    mc.addMerge('Array', 'Array', lastOp);
     const obj1 = {
       'a': 10,
       'b': {

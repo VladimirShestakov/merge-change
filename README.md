@@ -1,10 +1,10 @@
 # merge-change
 
-Simple library for deep merge of objects and other types (also for patch or immutable update) .
+Simple library for **deep merge** of objects and other types, also for **patches** and **immutable updates**.
 By default, merge works for "plain objects".
-Values of other types are replaced, but you can customize merging between specific types.
-Also, you can use declarative operations to specific merge like `unset`, `leave`, `push`.
-For example to remove some properties, to replace "plain objects", to concat arrays.
+Values of other types are replaced, but you can **customize merging** between specific types.
+Also, you can use **declarative operations** to specific merge like `unset`, `leave`, `push` and other.
+For example to remove some properties of object, to replace "plain objects", to concat arrays...
 
 ## Install
 
@@ -221,19 +221,20 @@ Result
 
 ## Customize merge
 
-You can declare function for merge custom types (or override default logic).
+You can declare function for merge custom types (or override default logic). Returns previous merge method.
 
-`mc.addons.merge{Type}{Type} = function(first, second, kind){...}`
+`mc.addMerge(type1, type2, callback)` (first, second, kind) => {...}`
 
-- `{Type}` - type (constructor name) of the first and second values: `Number, String, Boolean, Object, Array, Date, RegExp, Function, Undefined, Null, Symbol, Set, Map` and other system and custom constructor names
-- `first` - first value for merge
-- `second` - second value for merge
-- `kind` - name of merging method, such as "merge", "patch", "update". 
+- `type1, type2` - constructor name of the first and second values: `Number, String, Boolean, Object, Array, Date, RegExp, Function, Undefined, Null, Symbol, Set, Map` and other system and custom constructor names
+- `callback` - merge function with argument: (first, second, kind)
+    - `first` - first value for merge
+    - `second` - second value for merge
+    - `kind` - name of merging method, such as "merge", "patch", "update". 
 
 For example, if you always need to union arrays, you can declare method to merge array with array. 
 
 ```js
-mc.addons.mergeArrayArray = function(first, second, kind){
+const previous = mc.addMerge('Array', 'Array', function(first, second, kind){
   // merge - creaete new array with deep clone
   if (kind === 'merge'){
     return first.concat(second).map(item => mc.merge(undefined, item));
@@ -249,7 +250,43 @@ mc.addons.mergeArrayArray = function(first, second, kind){
   } else {
     return first.concat(second);
   }
-};
+});
+
+// reset custom method
+mc.addMerge('Array', 'Array', previous);
+```
+
+## Customize declarative operation
+
+You can declare function for declarative operation (or override default logic). Returns previous operation method.
+
+`mc.addMerge(name, callback)` (first, second, kind) => {...}`
+
+- `name` - operation name, for example "$concat"
+- `callback` - operation function with argument: (source, params)
+    - `source` - the value in which the operation is defined (`source: {$concat: params}`)
+    - `params` - value of operator (`$concat: params`)
+
+For example, if sometimes need to union arrays, you can declare declarative operation $concat (it exists in the library).
+
+```js
+const previous = mc.addOperation('$concat', function(source, params){
+  const paths = Object.keys(params);
+  for (const path of paths) {
+    let value = params[path];
+    let array = utils.get(source, path, []);
+    if (Array.isArray(array)) {
+      array = array.concat(value);
+      utils.set(source, path, array);
+    } else {
+      throw new Error('Cannot concat on not array');
+    }
+  }
+  return paths.length > 0;
+});
+
+// reset custom operation
+mc.addOperation('$concat', previous);
 ```
 
 ## Utils
