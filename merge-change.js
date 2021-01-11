@@ -270,7 +270,7 @@ MergeChange.prototype.mergeArrayArray = function(first, second, kind){
 /**
  * Checking if a declarative operation exists
  * @param operation
- * @param params
+ * @param [params]
  * @returns {boolean}
  */
 MergeChange.prototype.isOperation = function(operation, params){

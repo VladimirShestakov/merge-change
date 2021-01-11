@@ -18,47 +18,105 @@ $ npm install --save merge-change
 
 ### Merge
 
-Merge with deep cloning without changing the source objects. Great for creating or extending objects from the example (source).
+Merge with **deep cloning** without changing the source objects. Great for creating or extending objects from the example (source).
 
 ```js
-const result = mc.merge(source, ...values);
+mc.merge(source, ...values);
 ```
-example
+Example
 ```js
 const mc = require('merge-change');
 
 // Create new object with adding "a.three" and deleting "a.one"
-const result = mc.merge(
-  { a: {one: true, two: 2} }, 
-  { a: {three: 3, $unset: 'one'} }
-);
+let first = {
+  a: {
+    one: true,
+    two: 2
+  }
+};
+let second = {
+  a: {
+    three: 3,
+    $unset: ['one'] // $unset is a declarative operations
+  }
+};
+
+const result = mc.merge(first, second);
 
 console.log(result);
-//=> { a: { two: 2,  three: 3} }
+```
+```log
+{ a: { two: 2,  three: 3} }
 ```
 
 ### Patch
 
-Merge with mutation of the source objects. Nice for patching. New instances will not be created.
+Merge with **mutation** of the source objects. Nice for patching. New instances will not be created.
 
 ```js
-const result = mc.patch(source, ...patches);
+mc.patch(source, ...patches);
 ```
+
 ```js
-console.log(result === source); // => true
+let first = {
+  a: {
+    one: true,
+    two: 2
+  }
+};
+let second = {
+  a: {
+    three: 3,
+    $unset: ['one'] // $unset is a declarative operations
+  }
+};
+
+const result = mc.patch(first, second); // => { a: { two: 2,  three: 3} }
+
+// result is a mutated first argument
+console.log(result === first); // => true
+console.log(result !== second); // => true
 ```
+
 ### Update
 
-Immutable merge - create new instances only if there are diffs (also in inner properties). Nice for state management.
+**Immutable merge** - create new instances only if there are diffs (also in inner properties). Nice for state management.
 
 ```js
-const result = mc.update(source, ...changes);
+mc.update(source, ...changes);
 ```
 
-## Declarative operators
+```js
+let first = {
+  a: {
+    one: true,
+    two: 2,
+    sub: {
+      value: 3
+    }
+  }
+};
+let second = {
+  a: {
+    three: 3,
+    $unset: ['one'] // $unset is a declarative operations
+  }
+};
+
+const result = mc.update(first, second); // => { a: { two: 2,  three: 3, sub: { value: 3 }} }
+
+// result is a new object
+console.log(result !== first); // => true
+console.log(result !== second); // => true
+
+// object "a.sub" is unchanged
+console.log(result.a.sub === first.a.sub); // => true
+```
+
+## Declarative operations
 
 When merging objects, you can perform delete and replace properties at the same time.
-For change result use declarative operations in second or next arguments. Supported in all merge methods.
+Use declarative operations in second or next arguments. Supported in all merge methods.
 The syntax is similar to mongodb.
 
 ### `$set`
@@ -95,7 +153,6 @@ Result
   }
 }
 ```
-
 
 ### `$unset`
 
@@ -260,7 +317,7 @@ mc.addMerge('Array', 'Array', previous);
 
 You can declare function for declarative operation (or override default logic). Returns previous operation method.
 
-`mc.addMerge(name, callback)`
+`mc.addOperation(name, callback)`
 
 - `name` - operation name, for example "$concat"
 - `callback` - operation function with argument: (source, params). Return new value or source.
