@@ -174,6 +174,35 @@ const utils = {
       }
       return getClass(Object.getPrototypeOf(value));
     }
+  },
+
+  /**
+   * Конвертирует структуру данных через рекурсивный вызов методов call или .valueOf() у каждого значения. Если метода нет, возвращается исходное значение
+   * Значения для которых нет метода call останутся в исходном значении.
+   * @param value {*} Значение для конвертации
+   * @param [call] {Function} Функция конвертации, которая будет вызываться у объектов
+   * @returns {*}
+   */
+  plain(value, call = 'toJSON'){
+    if (value === null || typeof value === 'undefined') {
+      return value;
+    }
+    if (value[call]) {
+      value = value[call]();
+    } else {
+      //value = value.valueOf();
+    }
+    if (Array.isArray(value)){
+      return value.map(item => utils.plain(item, call));
+    } else
+    if (utils.type(value) === 'Object'){
+      let result = {};
+      for (const [key, item] of Object.entries(value)) {
+        result[key] =  utils.plain(item, call);
+      }
+      return result;
+    }
+    return value;
   }
 };
 
