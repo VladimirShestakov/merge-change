@@ -54,7 +54,10 @@ const utils = {
       return obj;
     }
     if (typeof path === 'string') {
-      return utils.set(obj, path.split('.'), value, doNotReplace);
+      const pathArray = path.split('.');
+      if (utils.isPrototypePolluted(pathArray[0]))
+        return;
+      return utils.set(obj, pathArray, value, doNotReplace);
     }
     const currentPath = path[0];
     const currentValue = obj[currentPath];
@@ -93,6 +96,9 @@ const utils = {
     } else {
       return Object.prototype.toString.call(value).slice(8, -1);
     }
+  },
+  isPrototypePolluted: function(key) {
+    return ['__proto__', 'constructor', 'prototype'].includes(key);
   }
 };
 
