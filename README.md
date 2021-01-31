@@ -357,7 +357,7 @@ const utils = require('merge-change').utils;
 ### utils.diff(source, compare, ignore = [], separator = '.')
 
 To calculate the difference between `source` and `compare` value. 
-The return value is an object with `$set` and `$unset` operators. Return value it can be used in merge functions.
+The return value is an object with `$set` and `$unset` operators. Return value can be used in merge functions.
 The `ignore` parameter - is a list of properties that are not included in the comparison.
 
 ```js
@@ -370,7 +370,8 @@ const first = {
       url: 'pic.png'
     }
   },
-  access: [100, 350, 200]
+  access: [100, 350, 200],
+  secret: 'x'
 }
 
 const second = {
@@ -384,7 +385,7 @@ const second = {
   access: [700]
 }
 
-const diff = utils.diff(first, second, '/');
+const diff = utils.diff(first, second, ['secret'], '/');
 ```
 Result (diff)
 ```
@@ -424,9 +425,9 @@ utils.instanceof(new MyClass(), 'Object'); // => true
 
 ### utils.toPlain(value)
 
-To convert values to plain types if value has plain representation. For example, all dates are converted to a string, but RegEx not.
+Converting deep value to plain types if value has plain representation. For example, all dates are converted to a string, but RegEx not.
 To customize conversion, you can define the `[utils.toPlainMethod]()` method in your object.
-Nice to use for unit tests.
+Nice for unit tests.
 
 > The method is similar to converting to JSON, only objects (arrays, functions...) are not converted to string representation.
 
