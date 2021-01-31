@@ -348,12 +348,63 @@ mc.addOperation('$concat', previous);
 
 ## Utils
 
+Useful functions - utilities
+
 ```js
 const utils = require('merge-change').utils;
 ```
-### .type(value:any): string
 
-Get real type of any value
+### utils.diff(source, compare, ignore = [], separator = '.')
+
+To calculate the difference between `source` and `compare` value. 
+The return value is an object with `$set` and `$unset` operators. Return value it can be used in merge functions.
+The `ignore` parameter - is a list of properties that are not included in the comparison.
+
+```js
+const first = {
+  name: 'value',
+  profile: {
+    surname: 'Surname',
+    birthday: new Date(),
+    avatar: {
+      url: 'pic.png'
+    }
+  },
+  access: [100, 350, 200]
+}
+
+const second = {
+  login: 'value',
+  profile: {
+    surname: 'Surname2',
+    avatar: {
+      url: 'new/pic.png'
+    }
+  },
+  access: [700]
+}
+
+const diff = utils.diff(first, second, '/');
+```
+Result (diff)
+```
+{
+  $set: {
+    'login': 'value',
+    'profile.surname': 'Surname2',
+    'profile.avatar.url': 'new/pic.png',
+    'access': [ 700 ]
+  },
+  $unset: [ 
+    'profile.birthday', 
+    'name'
+  ]
+}
+```
+
+### utils.type(value)
+
+Get real type of any value. The return value is a string - the name of the constructor.
 
 ```js
 utils.type(null); // => 'Null'
@@ -361,17 +412,64 @@ utils.type(true); // => 'Boolean'
 utils.type(new ObjectId()); // => 'ObjectID'
 ```
 
-### .instanceof(value:any, className: string): boolean
+### utils.instanceof(value, className)
 
-Checking instance of class. className is string (not constructor)
+Checking instance of class. `className` is string (not constructor). The return value is a boolean.
 
 ```js
 utils.instanceof(100, 'Number'); // => true
 utils.instanceof(new MyClass(), 'MyClass'); // => true
 utils.instanceof(new MyClass(), 'Object'); // => true
 ```
- 
-...see other utils in source [utils.js](./utils.js)
+
+### utils.toPlain(value)
+
+To convert values to plain types if value has plain representation. For example, all dates are converted to a string, but RegEx not.
+To customize conversion, you can define the `[utils.toPlainMethod]()` method in your object.
+Nice to use for unit tests.
+
+> The method is similar to converting to JSON, only objects (arrays, functions...) are not converted to string representation.
+
+```js
+const plain = utils.toPlain({
+  date: new Date('2021-01-07T19:10:21.759Z'),
+  prop: {
+    _id: new ObjectId('6010a8c75b9b393070e42e68')
+  }
+});
+```
+Result (plain)
+```
+{
+  date: '2021-01-07T19:10:21.759Z',
+  prop: { 
+    _id: '6010a8c75b9b393070e42e68' 
+  }
+}
+```
+
+### utils.toFlat(value, path = '', separator = '.', clearUndefined = false)
+
+Converting a nested structure to a flat object.
+Property names become path with `separator`.
+To customize conversion, you can define the `[utils.toFlatMethod](path, separator, result)` method in your object.
+
+```js
+const value = {
+  a: {
+    b: {
+      c: 100
+    }
+  }
+};
+const flat = utils.toFlat(value, 'parent', '.');
+```
+Result (flat)
+```
+{
+  'parent.a.b.c': 100
+}
+```
 
 ## License
 

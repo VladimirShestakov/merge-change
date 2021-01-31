@@ -176,34 +176,118 @@ const utils = {
     }
   },
 
+  diff: (source, compare, ignore = [], separator = '.', path = '', result) => {
+    if (!result) {
+      result = {$set: {}, $unset: []};
+    }
+    const sourcePlain = source && typeof source.toJSON === 'function' ? source.toJSON(): source;
+    const comparePlain = compare && typeof compare.toJSON === 'function' ? compare.toJSON(): compare;
+    const sourceType = utils.type(sourcePlain);
+    const compareType = utils.type(comparePlain);
+    if (sourceType === compareType && sourceType === 'Object'){
+      const sourceKeys = Object.keys(sourcePlain);
+      const compareKeys = Object.keys(comparePlain);
+      // set property
+      for (const key of compareKeys){
+        const p = path ? path + separator + key : key;
+        if (!ignore.includes(p)) {
+          // new property
+          if (!(key in sourcePlain)) {
+            result.$set[p] = compare[key];
+          } else
+            // change property
+          if (comparePlain[key] !== sourcePlain[key]) {
+            utils.diff(sourcePlain[key], comparePlain[key], ignore, separator, p, result);
+          }
+        }
+      }
+      // unset property
+      for (const key of sourceKeys){
+        if (!(key in comparePlain)){
+          const p = path ? path + separator + key : key;
+          if (!ignore.includes(p)) {
+            result.$unset.push(p);
+          }
+        }
+      }
+    } else {
+      if (!path) {
+        result = compare;
+      } else {
+        if (!ignore.includes(path)) {
+          result.$set[path] = compare;
+        }
+      }
+    }
+    return result;
+  },
+
   /**
-   * Конвертирует структуру данных через рекурсивный вызов методов call или .valueOf() у каждого значения. Если метода нет, возвращается исходное значение
+   * Конвертирует структуру данных через рекурсивный вызов методов toPlainMethod или toJSON если они есть у каждого значения.
+   * Если метода нет, возвращается исходное значение
    * Значения для которых нет метода call останутся в исходном значении.
    * @param value {*} Значение для конвертации
-   * @param [call] {Function} Функция конвертации, которая будет вызываться у объектов
    * @returns {*}
    */
-  plain(value, call = 'toJSON'){
+  toPlain(value){
     if (value === null || typeof value === 'undefined') {
       return value;
     }
-    if (value[call]) {
-      value = value[call]();
+    if (typeof value[utils.toPlainMethod] === 'function') {
+      value = value[utils.toPlainMethod]();
+    } else
+    if (typeof value.toJSON === 'function') {
+      value = value.toJSON();
     } else {
       //value = value.valueOf();
     }
     if (Array.isArray(value)){
-      return value.map(item => utils.plain(item, call));
+      return value.map(item => utils.toPlain(item));
     } else
     if (utils.type(value) === 'Object'){
       let result = {};
       for (const [key, item] of Object.entries(value)) {
-        result[key] =  utils.plain(item, call);
+        result[key] =  utils.toPlain(item);
       }
       return result;
     }
     return value;
-  }
+  },
+
+  /**
+   * Конвертация вложенной структуры в плоскую
+   * Названия свойств превращаются в путь {a: {b: 0}}  => {'a.b': 0}
+   * @param value {object|*} Исходный объекты для конвертации
+   * @param [path] {string} Базовый путь для формирования ключей плоского объекта. Используется для рекурсии.
+   * @param [separator] {string} Разделитель для названий ключей плоского объекта
+   * @param [clearUndefined] {boolean} Признак, добавлять ли в результат неопределенные значения
+   * @param [result] {object} Результат - плоский объект. Передаётся по ссылки для рекурсии
+   * @returns {{}}
+   */
+  toFlat: (value, path = '', separator = '.', clearUndefined = false, result = {}) => {
+    if (value && typeof value[utils.toFlatMethod] === 'function') {
+      value[utils.toFlatMethod](path, separator, clearUndefined, result);
+    } else if (utils.type(value) === 'Object') {
+      for (const [key, item] of Object.entries(value)) {
+        utils.toFlat(item, path ? `${path}${separator}${key}` : key, separator, clearUndefined, result);
+      }
+    } else if (!clearUndefined || typeof value !== 'undefined') {
+      if (path === '') {
+        result = value;
+      } else {
+        result[path] = value;
+      }
+    }
+    return result;
+  },
+  /**
+   * Название метода для кастомизации toPlain
+   */
+  toPlainMethod: Symbol('toPlain'),
+  /**
+   * Название метода для кастомизации toFlat
+   */
+  toFlatMethod: Symbol('toFlat'),
 };
 
 module.exports = utils;
