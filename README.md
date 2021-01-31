@@ -346,7 +346,7 @@ const previous = mc.addOperation('$concat', function(source, params){
 mc.addOperation('$concat', previous);
 ```
 
-## Utils
+# Utils
 
 Useful functions - utilities
 
@@ -354,7 +354,7 @@ Useful functions - utilities
 const utils = require('merge-change').utils;
 ```
 
-### utils.diff(source, compare, ignore = [], separator = '.')
+## `utils.diff(source, compare, ignore = [], separator = '.')`
 
 To calculate the difference between `source` and `compare` value. 
 The return value is an object with `$set` and `$unset` operators. Return value can be used in merge functions.
@@ -403,7 +403,7 @@ Result (diff)
 }
 ```
 
-### utils.type(value)
+## `utils.type(value)`
 
 Get real type of any value. The return value is a string - the name of the constructor.
 
@@ -413,7 +413,7 @@ utils.type(true); // => 'Boolean'
 utils.type(new ObjectId()); // => 'ObjectID'
 ```
 
-### utils.instanceof(value, className)
+## `utils.instanceof(value, className)`
 
 Checking instance of class. `className` is string (not constructor). The return value is a boolean.
 
@@ -423,7 +423,7 @@ utils.instanceof(new MyClass(), 'MyClass'); // => true
 utils.instanceof(new MyClass(), 'Object'); // => true
 ```
 
-### utils.toPlain(value)
+## `utils.toPlain(value)`
 
 Converting deep value to plain types if value has plain representation. For example, all dates are converted to a string, but RegEx not.
 To customize conversion, you can define the `[utils.toPlainMethod]()` method in your object.
@@ -449,7 +449,7 @@ Result (plain)
 }
 ```
 
-### utils.toFlat(value, path = '', separator = '.', clearUndefined = false)
+## `utils.toFlat(value, path = '', separator = '.', clearUndefined = false)`
 
 Converting a nested structure to a flat object.
 Property names become path with `separator`.
