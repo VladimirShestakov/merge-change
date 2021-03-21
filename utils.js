@@ -3,47 +3,55 @@
  */
 const utils = {
   unset: (obj, path, separator = '.') => {
-    if (typeof path === 'number') {
-      path = [path];
-    }
-    if (obj === null) {
-      return obj;
-    }
-    if (!path) {
-      return obj;
-    }
-    if (typeof path === 'string') {
-      return utils.unset(obj, utils.splitPath(path, separator));
-    }
-
-    const currentPath = path[0];
-
-    if (path.length === 1) {
-      if (Array.isArray(obj)) {
-        obj.splice(currentPath, 1);
-      } else {
-        delete obj[currentPath];
-      }
+    if (obj && typeof obj.operation$unset === 'function'){
+      return obj.operation$unset(path, separator);
     } else {
-      return utils.unset(obj[currentPath], path.slice(1));
+      if (typeof path === 'number') {
+        path = [path];
+      }
+      if (obj === null || typeof obj === 'undefined') {
+        return obj;
+      }
+      if (!path) {
+        return obj;
+      }
+      if (typeof path === 'string') {
+        return utils.unset(obj, utils.splitPath(path, separator));
+      }
+
+      const currentPath = path[0];
+
+      if (path.length === 1) {
+        if (Array.isArray(obj)) {
+          obj.splice(currentPath, 1);
+        } else {
+          delete obj[currentPath];
+        }
+      } else {
+        return utils.unset(obj[currentPath], path.slice(1));
+      }
+      return obj;
     }
-    return obj;
   },
 
   get: (obj, path, defaultValue, separator = '.') => {
-    if (typeof path === 'string') {
-      path = utils.splitPath(path, separator);
+    if (obj && typeof obj.operation$get === 'function'){
+      return obj.operation$get(path, defaultValue, separator);
+    } else {
+      if (typeof path === 'string') {
+        path = utils.splitPath(path, separator);
+      }
+      if (typeof path === 'number') {
+        path = [path];
+      }
+      if (typeof obj === 'undefined') {
+        return defaultValue;
+      }
+      if (path.length === 0) {
+        return obj;
+      }
+      return utils.get(obj[path[0]], path.slice(1), defaultValue);
     }
-    if (typeof path === 'number') {
-      path = [path];
-    }
-    if (typeof obj === 'undefined') {
-      return defaultValue;
-    }
-    if (path.length === 0) {
-      return obj;
-    }
-    return utils.get(obj[path[0]], path.slice(1), defaultValue);
   },
 
   /**
@@ -56,34 +64,38 @@ const utils = {
    * @returns {*}
    */
   set: (obj, path, value, doNotReplace, separator = '.') => {
-    if (typeof path === 'number') {
-      path = [path];
-    }
-    if (!path || !path.length) {
-      return obj;
-    }
-    if (!Array.isArray(path)) {
-      return utils.set(obj, utils.splitPath(path, separator), value, doNotReplace);
-    }
-    const currentPath = path[0];
-    const currentValue = obj[currentPath];
-    if (path.length === 1) {
-      // Если последний элемент пути, то установка значения
-      if (!doNotReplace || currentValue === void 0) {
-        obj[currentPath] = value;
+    if (obj && typeof obj.operation$set === 'function'){
+      return obj.operation$set(path, value, doNotReplace, separator);
+    } else {
+      if (typeof path === 'number') {
+        path = [path];
       }
-      return currentValue;
-    }
-    // Если путь продолжается, а текущего элемента нет, то создаётся пустой объект
-    if (currentValue === void 0) {
-      // //check if we assume an array
-      // if (typeof path[1] === 'number') {
-      //   obj[currentPath] = [];
-      // } else {
+      if (!path || !path.length) {
+        return obj;
+      }
+      if (!Array.isArray(path)) {
+        return utils.set(obj, utils.splitPath(path, separator), value, doNotReplace);
+      }
+      const currentPath = path[0];
+      const currentValue = obj[currentPath];
+      if (path.length === 1) {
+        // Если последний элемент пути, то установка значения
+        if (!doNotReplace || currentValue === void 0) {
+          obj[currentPath] = value;
+        }
+        return currentValue;
+      }
+      // Если путь продолжается, а текущего элемента нет, то создаётся пустой объект
+      if (currentValue === void 0) {
+        // //check if we assume an array
+        // if (typeof path[1] === 'number') {
+        //   obj[currentPath] = [];
+        // } else {
         obj[currentPath] = {};
-      // }
+        // }
+      }
+      return utils.set(obj[currentPath], path.slice(1), value, doNotReplace, separator);
     }
-    return utils.set(obj[currentPath], path.slice(1), value, doNotReplace, separator);
   },
 
   /**
@@ -176,12 +188,25 @@ const utils = {
     }
   },
 
+  /**
+   * Вычисление разницы, результатом является объект с операторами $set и $unset
+   * @param source {*} Исходное значение
+   * @param compare] {*} Сравниваемое (новое) значение
+   * @param [ignore {Array<string>} Названия игнорируемых свойтсв
+   * @param [separator] {String} разделитель в путях на вложенные свойства
+   * @param [path] {String} Путь на текущее свойство в рекурсивной обработке
+   * @param [result] {String} Возвращаемый результат в рекурсивной обработке. Не следует использовать.
+   * @returns {{$unset: [], $set: {}}}
+   */
   diff: (source, compare, ignore = [], separator = '.', path = '', result) => {
     if (!result) {
       result = {$set: {}, $unset: []};
     }
+    // Это не JSON.stringify! Вызываем метод, который даёт значение на конвертацию в JSON, но конвертация не выполняется
+    // Типы свойств остаются исходными, но при этом можем сравнить внутренности кастомных объектов
     const sourcePlain = source && typeof source.toJSON === 'function' ? source.toJSON(): source;
     const comparePlain = compare && typeof compare.toJSON === 'function' ? compare.toJSON(): compare;
+
     const sourceType = utils.type(sourcePlain);
     const compareType = utils.type(comparePlain);
     if (sourceType === compareType && sourceType === 'Object'){
@@ -193,7 +218,7 @@ const utils = {
         if (!ignore.includes(p)) {
           // new property
           if (!(key in sourcePlain)) {
-            result.$set[p] = compare[key];
+            result.$set[p] = comparePlain[key];
           } else
             // change property
           if (comparePlain[key] !== sourcePlain[key]) {

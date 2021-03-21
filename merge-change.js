@@ -1,22 +1,22 @@
 const utils = require('./utils.js');
 
 /**
- * Kinds of merge method
- * @type {{MERGE: string, UPDATE: string, PATCH: string}}
- */
-const KINDS = {
-  MERGE: 'merge', // cloning
-  PATCH: 'patch', // change in source value
-  UPDATE: 'update' //immutable update (new value if there are diffs)
-}
-
-/**
  * Module will export single instance of MergeChange
  * @returns {MergeChange}
  * @constructor
  */
 function MergeChange() {
   return this;
+}
+
+/**
+ * Kinds of merge method
+ * @type {{MERGE: string, UPDATE: string, PATCH: string}}
+ */
+MergeChange.KINDS = {
+  MERGE: 'merge', // cloning
+  PATCH: 'patch', // change in source value
+  UPDATE: 'update' //immutable update (new value if there are diffs)
 }
 
 /**
@@ -52,7 +52,7 @@ MergeChange.prototype.prepareMerge = function(kind) {
  * Можно использовать для клонирования.
  * @type {function(...values)}
  */
-MergeChange.prototype.merge = MergeChange.prototype.prepareMerge(KINDS.MERGE);
+MergeChange.prototype.merge = MergeChange.prototype.prepareMerge(MergeChange.KINDS.MERGE);
 
 /**
  * Merging patches
@@ -60,7 +60,7 @@ MergeChange.prototype.merge = MergeChange.prototype.prepareMerge(KINDS.MERGE);
  * Происходит мутирование переданных значений кроме последнего.
  * @type {function(...values)}
  */
-MergeChange.prototype.patch = MergeChange.prototype.prepareMerge(KINDS.PATCH);
+MergeChange.prototype.patch = MergeChange.prototype.prepareMerge(MergeChange.KINDS.PATCH);
 
 /**
  * Immutable merge
@@ -68,7 +68,7 @@ MergeChange.prototype.patch = MergeChange.prototype.prepareMerge(KINDS.PATCH);
  * Правило работает на всех уровнях вложенности.
  * @type {function(...values)}
  */
-MergeChange.prototype.update = MergeChange.prototype.prepareMerge(KINDS.UPDATE);
+MergeChange.prototype.update = MergeChange.prototype.prepareMerge(MergeChange.KINDS.UPDATE);
 
 /**
  * Merge Any with Any
@@ -134,7 +134,7 @@ MergeChange.prototype.mergeUndefinedAny = function(first, second, kind){
  * @returns {Date}
  */
 MergeChange.prototype.mergeUndefinedDate = function(first, second, kind){
-  return kind ===  KINDS.MERGE ? new Date(second) : second;
+  return kind ===  MergeChange.KINDS.MERGE ? new Date(second) : second;
 }
 
 /**
@@ -146,7 +146,7 @@ MergeChange.prototype.mergeUndefinedDate = function(first, second, kind){
  * @returns {Set}
  */
 MergeChange.prototype.mergeUndefinedSet = function(first, second, kind){
-  return kind ===  KINDS.MERGE ? new Set(second) : second;
+  return kind ===  MergeChange.KINDS.MERGE ? new Set(second) : second;
 }
 
 /**
@@ -158,7 +158,7 @@ MergeChange.prototype.mergeUndefinedSet = function(first, second, kind){
  * @returns {Map}
  */
 MergeChange.prototype.mergeUndefinedMap = function(first, second, kind){
-  return kind ===  KINDS.MERGE ? new Map(second) : second;
+  return kind ===  MergeChange.KINDS.MERGE ? new Map(second) : second;
 }
 
 /**
@@ -170,7 +170,7 @@ MergeChange.prototype.mergeUndefinedMap = function(first, second, kind){
  * @returns {WeekSet}
  */
 MergeChange.prototype.mergeUndefinedWeekSet = function(first, second, kind) {
-  return kind === KINDS.MERGE ? new WeakSet(second) : second;
+  return kind === MergeChange.MERGE ? new WeakSet(second) : second;
 }
 
 /**
@@ -182,7 +182,7 @@ MergeChange.prototype.mergeUndefinedWeekSet = function(first, second, kind) {
  * @returns {WeekMap}
  */
 MergeChange.prototype.mergeUndefinedWeekMap = function(first, second, kind){
-  return kind ===  KINDS.MERGE ? new WeakMap(second) : second;
+  return kind ===  MergeChange.KINDS.MERGE ? new WeakMap(second) : second;
 }
 
 /**
@@ -194,7 +194,7 @@ MergeChange.prototype.mergeUndefinedWeekMap = function(first, second, kind){
  * @returns {Array}
  */
 MergeChange.prototype.mergeUndefinedArray = function(first, second, kind){
-  return kind ===  KINDS.MERGE ? this.mergeArrayArray([], second, kind) : second;
+  return kind ===  MergeChange.KINDS.MERGE ? this.mergeArrayArray([], second, kind) : second;
 }
 
 /**
@@ -207,7 +207,7 @@ MergeChange.prototype.mergeUndefinedArray = function(first, second, kind){
  * @returns {Object}
  */
 MergeChange.prototype.mergeUndefinedObject = function(first, second, kind){
-  return kind ===  KINDS.MERGE ? this.mergeObjectObject({}, second, kind) : second;
+  return kind ===  MergeChange.KINDS.MERGE ? this.mergeObjectObject({}, second, kind) : second;
 }
 
 /**
@@ -218,9 +218,9 @@ MergeChange.prototype.mergeUndefinedObject = function(first, second, kind){
  * @returns {Object}
  */
 MergeChange.prototype.mergeObjectObject = function(first, second, kind){
-  let result = kind === KINDS.PATCH ? first : {};
+  let result = kind === MergeChange.KINDS.PATCH ? first : {};
   let resultField;
-  let isChange = kind === KINDS.MERGE;
+  let isChange = kind === MergeChange.KINDS.MERGE;
   let operations = [];
   const keysFirst = Object.keys(first);
   const keysSecond = new Set(Object.keys(second));
@@ -261,7 +261,7 @@ MergeChange.prototype.mergeObjectObject = function(first, second, kind){
  * @returns {Array}
  */
 MergeChange.prototype.mergeArrayArray = function(first, second, kind){
-  if (kind === KINDS.MERGE){
+  if (kind === MergeChange.KINDS.MERGE){
     return second.map(item => this[kind](undefined, item));
   }
   return second;

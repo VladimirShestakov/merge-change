@@ -176,8 +176,6 @@ describe('Test diff()', () => {
 
     const diff = utils.diff(first, second, '/');
 
-    console.log(diff);
-
     expect(diff).toEqual({
       $set: {
         'login': 'value',

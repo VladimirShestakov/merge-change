@@ -158,7 +158,6 @@ describe('Test merge()', () => {
       },
     };
     const result = mc.update(first, second); // => { a: { two: 2,  three: 3, sub: { value: 3 }} }
-    console.log(result);
 
     // result is a new object
     expect(result !== first).toEqual(true);
