@@ -424,16 +424,16 @@ utils.instanceof(new MyClass(), 'MyClass'); // => true
 utils.instanceof(new MyClass(), 'Object'); // => true
 ```
 
-### `utils.toPlain(value)`
+### `utils.plain(value)`
 
 Converting deep value to plain types if value has plain representation. For example, all dates are converted to a string, but RegEx not.
-To customize conversion, you can define the `[utils.toPlainMethod]()` method in your object.
+To customize conversion, you can define the `[methods.toPlain]()` method in your object.
 Nice for unit tests.
 
 > The method is similar to converting to JSON, only objects (arrays, functions...) are not converted to string representation.
 
 ```js
-const plain = utils.toPlain({
+const plain = utils.plain({
   date: new Date('2021-01-07T19:10:21.759Z'),
   prop: {
     _id: new ObjectId('6010a8c75b9b393070e42e68')
@@ -450,11 +450,11 @@ Result (plain)
 }
 ```
 
-### `utils.toFlat(value, path = '', separator = '.', clearUndefined = false)`
+### `utils.flat(value, path = '', separator = '.', clearUndefined = false)`
 
 Converting a nested structure to a flat object.
 Property names become path with `separator`.
-To customize conversion, you can define the `[utils.toFlatMethod](path, separator, result)` method in your object.
+To customize conversion, you can define the `[methods.toFlat]()` method in your object.
 
 ```js
 const value = {
@@ -464,7 +464,7 @@ const value = {
     }
   }
 };
-const flat = utils.toFlat(value, 'parent', '.');
+const flat = utils.flat(value, 'parent', '.');
 ```
 Result (flat)
 ```

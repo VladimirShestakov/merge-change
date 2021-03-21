@@ -1,4 +1,5 @@
 const utils = require('../utils.js');
+const methods = require('../methods.js');
 
 describe('Test unset()', () => {
 
@@ -12,7 +13,7 @@ describe('Test unset()', () => {
       },
     };
     utils.unset(data, '/prop/deep/superDeep', '/');
-    expect(utils.toPlain(data)).toStrictEqual({
+    expect(utils.plain(data)).toStrictEqual({
       prop: {
         deep: {
           some: 1
@@ -26,9 +27,9 @@ describe('Test unset()', () => {
       constructor(value = {}) {
         this.value = value;
       }
-      operation$unset(path, separator = '.') {
-        return utils.unset(this.value, path, separator);
-      }
+      // [methods.toOperation]() {
+      //   return this.value;
+      // }
       toJSON(){
         return this.value;
       }
@@ -44,7 +45,7 @@ describe('Test unset()', () => {
     });
 
     utils.unset(data, '/sub/prop/inner', '/');
-    expect(utils.toPlain(data)).toStrictEqual({
+    expect(utils.plain(data)).toStrictEqual({
       name: 'Test',
       sub: {
         prop: {

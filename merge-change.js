@@ -1,4 +1,5 @@
 const utils = require('./utils.js');
+const methods = require('./methods.js');
 
 /**
  * Module will export single instance of MergeChange
@@ -314,7 +315,7 @@ MergeChange.prototype.operation$set = function(source, params){
  */
 MergeChange.prototype.operation$unset = function(source, params){
   if (Array.isArray(params)){
-    // перечень полей для удаления
+    // Перечень полей для удаления
     for (const fieldName of params) {
       utils.unset(source, fieldName);
     }
@@ -332,6 +333,11 @@ MergeChange.prototype.operation$unset = function(source, params){
  */
 MergeChange.prototype.operation$leave = function(source, params){
   if (Array.isArray(params)){
+    if (source && typeof source[methods.toOperation] === 'function') {
+      source = source[methods.toOperation]();
+    } else if (source && typeof source.toJSON === 'function') {
+      source = source.toJSON();
+    }
     const names = {};
     for (const param of params){
       let name = param;
@@ -378,6 +384,11 @@ MergeChange.prototype.operation$leave = function(source, params){
  * @returns {boolean}
  */
 MergeChange.prototype.operation$pull = function(source, params){
+  if (source && typeof source[methods.toOperation] === 'function') {
+    source = source[methods.toOperation]();
+  } else if (source && typeof source.toJSON === 'function') {
+    source = source.toJSON();
+  }
   const paths = Object.keys(params);
   for (const path of paths) {
     const cond = params[path];
@@ -403,6 +414,11 @@ MergeChange.prototype.operation$pull = function(source, params){
  * @returns {boolean}
  */
 MergeChange.prototype.operation$push = function(source, params) {
+  if (source && typeof source[methods.toOperation] === 'function') {
+    source = source[methods.toOperation]();
+  } else if (source && typeof source.toJSON === 'function') {
+    source = source.toJSON();
+  }
   const paths = Object.keys(params);
   for (const path of paths) {
     const value = params[path];
@@ -425,6 +441,11 @@ MergeChange.prototype.operation$push = function(source, params) {
  * @returns {boolean}
  */
 MergeChange.prototype.operation$concat = function(source, params) {
+  if (source && typeof source[methods.toOperation] === 'function') {
+    source = source[methods.toOperation]();
+  } else if (source && typeof source.toJSON === 'function') {
+    source = source.toJSON();
+  }
   const paths = Object.keys(params);
   for (const path of paths) {
     let value = params[path];
@@ -437,17 +458,6 @@ MergeChange.prototype.operation$concat = function(source, params) {
     }
   }
   return paths.length > 0;
-}
-
-/**
- * @todo
- * Вычисление разницы между объектами.
- * Возвращается объект модификаций
- * @param prevObject
- * @param newObject
- */
-MergeChange.prototype.diff = function(prevObject, newObject){
-
 }
 
 /**

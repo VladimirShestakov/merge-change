@@ -1,4 +1,5 @@
 const utils = require('../utils.js');
+const methods = require('../methods.js');
 
 describe('Test get()', () => {
 
@@ -30,9 +31,8 @@ describe('Test get()', () => {
       constructor(value = {}) {
         this.value = value;
       }
-
-      operation$get(path, defaultValue, separator = '.') {
-        return utils.get(this.value, path, defaultValue, separator);
+      [methods.toOperation](){
+        return this.value;
       }
     }
 

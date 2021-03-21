@@ -1,18 +1,13 @@
 const mc = require('../index.js');
-const utils = mc.utils;
+const {utils, methods} = mc;
 
 class Custom {
   constructor(value = {}) {
     this.value = value;
   }
 
-  [utils.toFlatMethod](path = '', separator = '.', clearUndefined = false, result = {}) {
-    for (const [key, text] of Object.entries(this.value)) {
-      if (!clearUndefined || typeof text !== 'undefined') {
-        result[path ? `${path}${separator}${key}` : key] = text;
-      }
-    }
-    return result;
+  [methods.toFlat]() {
+    return this.value;
   }
 
   toJSON() {
@@ -76,7 +71,7 @@ describe('Test diff()', () => {
 
     const diff = utils.diff(first, second);
 
-    expect(utils.toPlain(diff)).toEqual({
+    expect(utils.plain(diff)).toEqual({
       $set: {
         'name': 2,
         'profile.surname2': 'x',
@@ -100,9 +95,9 @@ describe('Test diff()', () => {
     });
 
     // Merge first object with diff
-    const updated = mc.merge(utils.toPlain(first), diff);
+    const updated = mc.merge(utils.plain(first), diff);
 
-    expect(utils.toPlain(updated)).toEqual(utils.toPlain(second));
+    expect(utils.plain(updated)).toEqual(utils.plain(second));
   });
 
 
@@ -136,7 +131,7 @@ describe('Test diff()', () => {
 
     const diff = utils.diff(first, second, ['someDeep', 'profile.avatar.url']);
 
-    expect(utils.toPlain(diff)).toEqual({
+    expect(utils.plain(diff)).toEqual({
       $set: {
         "name": 2,
         "profile.newSurname": "x",

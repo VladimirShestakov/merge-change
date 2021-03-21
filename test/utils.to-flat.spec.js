@@ -1,24 +1,19 @@
-const utils = require('../index.js').utils;
+const {utils, methods} = require('../index.js');
 
 class Custom {
   constructor(value = {}) {
     this.value = value;
   }
-  [utils.toFlatMethod](path = '', separator = '.', clearUndefined = false, result = {}){
-    for (const [key, text] of Object.entries(this.value)) {
-      if (!clearUndefined || typeof text !== 'undefined') {
-        result[path ? `${path}${separator}${key}` : key] = text;
-      }
-    }
-    return result;
+  [methods.toFlat](){
+    return this.value;
   }
 }
 
-describe('Test toFlat()', () => {
+describe('Test flat()', () => {
 
   test('common', () => {
 
-    let sets = utils.toFlat({
+    let sets = utils.flat({
       name: 1,
       profile: {
         surname: 'x',
@@ -38,7 +33,7 @@ describe('Test toFlat()', () => {
       i18n: new Custom({ru: 'RU', en: 'EN'}),
     });
 
-    expect(utils.toPlain(sets)).toEqual({
+    expect(utils.plain(sets)).toEqual({
       'name': 1,
       'profile.surname': 'x',
       'profile.avatar.code': 1,

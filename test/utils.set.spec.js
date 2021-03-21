@@ -1,4 +1,5 @@
 const utils = require('../utils.js');
+const methods = require('../methods.js');
 
 describe('Test set()', () => {
 
@@ -38,8 +39,8 @@ describe('Test set()', () => {
         this.value = value;
       }
 
-      operation$set(path, value, doNotReplace, separator = '.') {
-        return utils.set(this.value, path, value, doNotReplace, separator);
+      [methods.toOperation]() {
+        return this.value;
       }
 
       toJSON() {
@@ -58,7 +59,7 @@ describe('Test set()', () => {
 
     utils.set(data, 'sub.prop.inner2', 200, false, '.');
 
-    expect(utils.toPlain(data)).toEqual({
+    expect(utils.plain(data)).toEqual({
       name: 'Test',
       sub: {
         prop: {

@@ -1,57 +1,60 @@
+const methods = require('./methods');
 /**
  * Utils for change object
  */
 const utils = {
   unset: (obj, path, separator = '.') => {
-    if (obj && typeof obj.operation$unset === 'function'){
-      return obj.operation$unset(path, separator);
-    } else {
-      if (typeof path === 'number') {
-        path = [path];
-      }
-      if (obj === null || typeof obj === 'undefined') {
-        return obj;
-      }
-      if (!path) {
-        return obj;
-      }
-      if (typeof path === 'string') {
-        return utils.unset(obj, utils.splitPath(path, separator));
-      }
-
-      const currentPath = path[0];
-
-      if (path.length === 1) {
-        if (Array.isArray(obj)) {
-          obj.splice(currentPath, 1);
-        } else {
-          delete obj[currentPath];
-        }
-      } else {
-        return utils.unset(obj[currentPath], path.slice(1));
-      }
+    if (obj && typeof obj[methods.toOperation] === 'function') {
+      obj = obj[methods.toOperation]();
+    } else if (obj && typeof obj.toJSON === 'function') {
+      obj = obj.toJSON();
+    }
+    if (typeof path === 'number') {
+      path = [path];
+    }
+    if (obj === null || typeof obj === 'undefined') {
       return obj;
     }
+    if (!path) {
+      return obj;
+    }
+    if (typeof path === 'string') {
+      return utils.unset(obj, utils.splitPath(path, separator));
+    }
+
+    const currentPath = path[0];
+
+    if (path.length === 1) {
+      if (Array.isArray(obj)) {
+        obj.splice(currentPath, 1);
+      } else {
+        delete obj[currentPath];
+      }
+    } else {
+      return utils.unset(obj[currentPath], path.slice(1));
+    }
+    return obj;
   },
 
   get: (obj, path, defaultValue, separator = '.') => {
-    if (obj && typeof obj.operation$get === 'function'){
-      return obj.operation$get(path, defaultValue, separator);
-    } else {
-      if (typeof path === 'string') {
-        path = utils.splitPath(path, separator);
-      }
-      if (typeof path === 'number') {
-        path = [path];
-      }
-      if (typeof obj === 'undefined') {
-        return defaultValue;
-      }
-      if (path.length === 0) {
-        return obj;
-      }
-      return utils.get(obj[path[0]], path.slice(1), defaultValue);
+    if (obj && typeof obj[methods.toOperation] === 'function') {
+      obj = obj[methods.toOperation]();
+    } else if (obj && typeof obj.toJSON === 'function') {
+      obj = obj.toJSON();
     }
+    if (typeof path === 'string') {
+      path = utils.splitPath(path, separator);
+    }
+    if (typeof path === 'number') {
+      path = [path];
+    }
+    if (typeof obj === 'undefined') {
+      return defaultValue;
+    }
+    if (path.length === 0) {
+      return obj;
+    }
+    return utils.get(obj[path[0]], path.slice(1), defaultValue);
   },
 
   /**
@@ -64,38 +67,39 @@ const utils = {
    * @returns {*}
    */
   set: (obj, path, value, doNotReplace, separator = '.') => {
-    if (obj && typeof obj.operation$set === 'function'){
-      return obj.operation$set(path, value, doNotReplace, separator);
-    } else {
-      if (typeof path === 'number') {
-        path = [path];
-      }
-      if (!path || !path.length) {
-        return obj;
-      }
-      if (!Array.isArray(path)) {
-        return utils.set(obj, utils.splitPath(path, separator), value, doNotReplace);
-      }
-      const currentPath = path[0];
-      const currentValue = obj[currentPath];
-      if (path.length === 1) {
-        // Если последний элемент пути, то установка значения
-        if (!doNotReplace || currentValue === void 0) {
-          obj[currentPath] = value;
-        }
-        return currentValue;
-      }
-      // Если путь продолжается, а текущего элемента нет, то создаётся пустой объект
-      if (currentValue === void 0) {
-        // //check if we assume an array
-        // if (typeof path[1] === 'number') {
-        //   obj[currentPath] = [];
-        // } else {
-        obj[currentPath] = {};
-        // }
-      }
-      return utils.set(obj[currentPath], path.slice(1), value, doNotReplace, separator);
+    if (obj && typeof obj[methods.toOperation] === 'function') {
+      obj = obj[methods.toOperation]();
+    } else if (obj && typeof obj.toJSON === 'function') {
+      obj = obj.toJSON();
     }
+    if (typeof path === 'number') {
+      path = [path];
+    }
+    if (!path || !path.length) {
+      return obj;
+    }
+    if (!Array.isArray(path)) {
+      return utils.set(obj, utils.splitPath(path, separator), value, doNotReplace);
+    }
+    const currentPath = path[0];
+    const currentValue = obj[currentPath];
+    if (path.length === 1) {
+      // Если последний элемент пути, то установка значения
+      if (!doNotReplace || currentValue === void 0) {
+        obj[currentPath] = value;
+      }
+      return currentValue;
+    }
+    // Если путь продолжается, а текущего элемента нет, то создаётся пустой объект
+    if (currentValue === void 0) {
+      // //check if we assume an array
+      // if (typeof path[1] === 'number') {
+      //   obj[currentPath] = [];
+      // } else {
+      obj[currentPath] = {};
+      // }
+    }
+    return utils.set(obj[currentPath], path.slice(1), value, doNotReplace, separator);
   },
 
   /**
@@ -105,22 +109,22 @@ const utils = {
    * @returns {(number|string)[]}
    */
   splitPath: (path, separator = '.') => {
-    if (typeof path === 'string'){
-      if (path.substr(0, separator.length) === separator){
+    if (typeof path === 'string') {
+      if (path.substr(0, separator.length) === separator) {
         path = path.substr(separator.length);
       }
-      if (path.substr(path.length - separator.length) === separator){
+      if (path.substr(path.length - separator.length) === separator) {
         path = path.substr(0, path.length - separator.length);
       }
       path = path.split(separator).map(name => {
         const index = Number(name);
         return !Number.isNaN(index) && index !== null ? index : name;
-      })
+      });
     }
     return path;
   },
 
-  equal: function(first, second){
+  equal: function (first, second) {
     return first === second;
   },
 
@@ -134,8 +138,8 @@ const utils = {
     if (value === null) {
       return 'Null';
     }
-    if (typeof value === 'undefined'){
-      return 'Undefined'
+    if (typeof value === 'undefined') {
+      return 'Undefined';
     }
     return Object.getPrototypeOf(value).constructor.name;
   },
@@ -145,13 +149,12 @@ const utils = {
    * @param value
    * @returns {Array<string>}
    */
-  typeList(value){
+  typeList(value) {
     let result = [];
-    if (value === null){
+    if (value === null) {
       result.push('Null');
-    } else
-    if (typeof value === 'undefined'){
-      result.push('Undefined')
+    } else if (typeof value === 'undefined') {
+      result.push('Undefined');
     } else {
       function getClass(value) {
         if (value && value.constructor) {
@@ -159,6 +162,7 @@ const utils = {
           getClass(Object.getPrototypeOf(value));
         }
       }
+
       getClass(Object.getPrototypeOf(value));
     }
     return result;
@@ -170,13 +174,13 @@ const utils = {
    * @param className Название типа  (типа, конструктора)
    * @returns {boolean}
    */
-  instanceof(value, className){
-    if (value === null){
+  instanceof(value, className) {
+    if (value === null) {
       return className === 'Null';
     } else {
       function getClass(value) {
         if (value && value.constructor) {
-          if (className === value.constructor.name){
+          if (className === value.constructor.name) {
             return true;
           }
           return getClass(Object.getPrototypeOf(value));
@@ -184,6 +188,7 @@ const utils = {
           return false;
         }
       }
+
       return getClass(Object.getPrototypeOf(value));
     }
   },
@@ -204,16 +209,16 @@ const utils = {
     }
     // Это не JSON.stringify! Вызываем метод, который даёт значение на конвертацию в JSON, но конвертация не выполняется
     // Типы свойств остаются исходными, но при этом можем сравнить внутренности кастомных объектов
-    const sourcePlain = source && typeof source.toJSON === 'function' ? source.toJSON(): source;
-    const comparePlain = compare && typeof compare.toJSON === 'function' ? compare.toJSON(): compare;
+    const sourcePlain = source && typeof source.toJSON === 'function' ? source.toJSON() : source;
+    const comparePlain = compare && typeof compare.toJSON === 'function' ? compare.toJSON() : compare;
 
     const sourceType = utils.type(sourcePlain);
     const compareType = utils.type(comparePlain);
-    if (sourceType === compareType && sourceType === 'Object'){
+    if (sourceType === compareType && sourceType === 'Object') {
       const sourceKeys = Object.keys(sourcePlain);
       const compareKeys = Object.keys(comparePlain);
       // set property
-      for (const key of compareKeys){
+      for (const key of compareKeys) {
         const p = path ? path + separator + key : key;
         if (!ignore.includes(p)) {
           // new property
@@ -227,8 +232,8 @@ const utils = {
         }
       }
       // unset property
-      for (const key of sourceKeys){
-        if (!(key in comparePlain)){
+      for (const key of sourceKeys) {
+        if (!(key in comparePlain)) {
           const p = path ? path + separator + key : key;
           if (!ignore.includes(p)) {
             result.$unset.push(p);
@@ -248,31 +253,29 @@ const utils = {
   },
 
   /**
-   * Конвертирует структуру данных через рекурсивный вызов методов toPlainMethod или toJSON если они есть у каждого значения.
+   * Конвертирует структуру данных через рекурсивный вызов методов toPlain или toJSON если они есть у каждого значения.
    * Если метода нет, возвращается исходное значение
    * Значения для которых нет метода call останутся в исходном значении.
    * @param value {*} Значение для конвертации
    * @returns {*}
    */
-  toPlain(value){
+  plain(value) {
     if (value === null || typeof value === 'undefined') {
       return value;
     }
-    if (typeof value[utils.toPlainMethod] === 'function') {
-      value = value[utils.toPlainMethod]();
-    } else
-    if (typeof value.toJSON === 'function') {
+    if (typeof value[methods.toPlain] === 'function') {
+      value = value[methods.toPlain]();
+    } else if (typeof value.toJSON === 'function') {
       value = value.toJSON();
     } else {
       //value = value.valueOf();
     }
-    if (Array.isArray(value)){
-      return value.map(item => utils.toPlain(item));
-    } else
-    if (utils.type(value) === 'Object'){
+    if (Array.isArray(value)) {
+      return value.map(item => utils.plain(item));
+    } else if (utils.type(value) === 'Object') {
       let result = {};
       for (const [key, item] of Object.entries(value)) {
-        result[key] =  utils.toPlain(item);
+        result[key] = utils.plain(item);
       }
       return result;
     }
@@ -289,12 +292,17 @@ const utils = {
    * @param [result] {object} Результат - плоский объект. Передаётся по ссылки для рекурсии
    * @returns {{}}
    */
-  toFlat: (value, path = '', separator = '.', clearUndefined = false, result = {}) => {
-    if (value && typeof value[utils.toFlatMethod] === 'function') {
-      value[utils.toFlatMethod](path, separator, clearUndefined, result);
-    } else if (utils.type(value) === 'Object') {
+  flat: (value, path = '', separator = '.', clearUndefined = false, result = {}) => {
+    if (value && typeof value[methods.toFlat] === 'function') {
+      value = value[methods.toFlat]();
+    } else if (value && typeof value.toJSON === 'function') {
+      value = value.toJSON();
+    } else {
+      //value = value.valueOf();
+    }
+    if (utils.type(value) === 'Object') {
       for (const [key, item] of Object.entries(value)) {
-        utils.toFlat(item, path ? `${path}${separator}${key}` : key, separator, clearUndefined, result);
+        utils.flat(item, path ? `${path}${separator}${key}` : key, separator, clearUndefined, result);
       }
     } else if (!clearUndefined || typeof value !== 'undefined') {
       if (path === '') {
@@ -305,14 +313,23 @@ const utils = {
     }
     return result;
   },
-  /**
-   * Название метода для кастомизации toPlain
-   */
-  toPlainMethod: Symbol('toPlain'),
-  /**
-   * Название метода для кастомизации toFlat
-   */
-  toFlatMethod: Symbol('toFlat'),
 };
+
+/**
+ * @deprecated use utils.plain;
+ */
+utils.toPlain = utils.plain;
+/**
+ * @deprecated use utils.flat
+ */
+utils.toFlat = utils.flat;
+/**
+ * @deprecated use methods.toPlain
+ */
+utils.toPlainMethod = methods.toPlain;
+/**
+ * @deprecated use methods.toFlat
+ */
+utils.toFlatMethod = methods.toFlat;
 
 module.exports = utils;
