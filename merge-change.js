@@ -19,6 +19,7 @@ MergeChange.KINDS = {
   PATCH: 'patch', // change in source value
   UPDATE: 'update' //immutable update (new value if there are diffs)
 }
+MergeChange.prototype.KINDS = MergeChange.KINDS;
 
 /**
  * Factory method. Looks for suitable methods for type merging
