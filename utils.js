@@ -257,9 +257,10 @@ const utils = {
    * Если метода нет, возвращается исходное значение
    * Значения для которых нет метода call останутся в исходном значении.
    * @param value {*} Значение для конвертации
+   * @param [recursive] {Boolean} Выполнить вложенную обработку
    * @returns {*}
    */
-  plain(value) {
+  plain(value, recursive = true) {
     if (value === null || typeof value === 'undefined') {
       return value;
     }
@@ -270,14 +271,16 @@ const utils = {
     } else {
       //value = value.valueOf();
     }
-    if (Array.isArray(value)) {
-      return value.map(item => utils.plain(item));
-    } else if (utils.type(value) === 'Object') {
-      let result = {};
-      for (const [key, item] of Object.entries(value)) {
-        result[key] = utils.plain(item);
+    if (recursive) {
+      if (Array.isArray(value)) {
+        return value.map(item => utils.plain(item));
+      } else if (utils.type(value) === 'Object') {
+        let result = {};
+        for (const [key, item] of Object.entries(value)) {
+          result[key] = utils.plain(item);
+        }
+        return result;
       }
-      return result;
     }
     return value;
   },
