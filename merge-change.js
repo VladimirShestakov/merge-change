@@ -248,7 +248,7 @@ MergeChange.prototype.mergeObjectObject = function(first, second, kind){
   }
   // execute declarative operations
   for (const [operation, params] of operations){
-    isChange = this.operation(result, operation, params);
+    isChange = this.operation(result, operation, params) || isChange;
   }
   return isChange ? result : first;
 }
