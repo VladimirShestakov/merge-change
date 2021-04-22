@@ -50,9 +50,12 @@ MergeChange.prototype.prepareMerge = function(kind) {
 
 /**
  * Merge with cloning
- * Переданные объекты не мутируются.
+ * Переданные значения не мутируются.
  * Можно использовать для клонирования.
- * @type {function(...values)}
+ * @param first {*}
+ * @param second {*}
+ * @param more {...*}
+ * @returns {*}
  */
 MergeChange.prototype.merge = MergeChange.prototype.prepareMerge(MergeChange.KINDS.MERGE);
 
@@ -60,7 +63,10 @@ MergeChange.prototype.merge = MergeChange.prototype.prepareMerge(MergeChange.KIN
  * Merging patches
  * Гарантируется сохранение ссылочных связей.
  * Происходит мутирование переданных значений кроме последнего.
- * @type {function(...values)}
+ * @param first {*}
+ * @param second {*}
+ * @param more {...*}
+ * @returns {*}
  */
 MergeChange.prototype.patch = MergeChange.prototype.prepareMerge(MergeChange.KINDS.PATCH);
 
@@ -68,7 +74,10 @@ MergeChange.prototype.patch = MergeChange.prototype.prepareMerge(MergeChange.KIN
  * Immutable merge
  * Если есть изменения, то возвращется новый объект. Если изменений нет, то возвращается базовый объект.
  * Правило работает на всех уровнях вложенности.
- * @type {function(...values)}
+ * @param first {*}
+ * @param second {*}
+ * @param more {...*}
+ * @returns {*}
  */
 MergeChange.prototype.update = MergeChange.prototype.prepareMerge(MergeChange.KINDS.UPDATE);
 

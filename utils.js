@@ -197,13 +197,14 @@ const utils = {
    * Вычисление разницы, результатом является объект с операторами $set и $unset
    * @param source {*} Исходное значение
    * @param compare] {*} Сравниваемое (новое) значение
-   * @param [ignore {Array<string>} Названия игнорируемых свойтсв
+   * @param [ignore] {Array<string>} Названия игнорируемых свойств
    * @param [separator] {String} разделитель в путях на вложенные свойства
+   * @param [white] {Array<string>} Названия сравниваемых свойств, если массив не пустой
    * @param [path] {String} Путь на текущее свойство в рекурсивной обработке
    * @param [result] {String} Возвращаемый результат в рекурсивной обработке. Не следует использовать.
    * @returns {{$unset: [], $set: {}}}
    */
-  diff: (source, compare, ignore = [], separator = '.', path = '', result) => {
+  diff: (source, compare, ignore = [], separator = '.', white = [], path = '', result) => {
     if (!result) {
       result = {$set: {}, $unset: []};
     }
@@ -220,14 +221,15 @@ const utils = {
       // set property
       for (const key of compareKeys) {
         const p = path ? path + separator + key : key;
-        if (!ignore.includes(p)) {
+        // Если свойство не в игноре и если определен белый список, то оно есть в нём
+        if (!ignore.includes(p) && (white.length === 0 || white.includes(p))) {
           // new property
           if (!(key in sourcePlain)) {
             result.$set[p] = comparePlain[key];
           } else
             // change property
           if (comparePlain[key] !== sourcePlain[key]) {
-            utils.diff(sourcePlain[key], comparePlain[key], ignore, separator, p, result);
+            utils.diff(sourcePlain[key], comparePlain[key], ignore, separator, white, p, result);
           }
         }
       }
@@ -235,7 +237,7 @@ const utils = {
       for (const key of sourceKeys) {
         if (!(key in comparePlain)) {
           const p = path ? path + separator + key : key;
-          if (!ignore.includes(p)) {
+          if (!ignore.includes(p) && (white.length === 0 || white.includes(p))) {
             result.$unset.push(p);
           }
         }
@@ -244,7 +246,7 @@ const utils = {
       if (!path) {
         result = compare;
       } else {
-        if (!ignore.includes(path)) {
+        if (!ignore.includes(path) && (white.length === 0 || white.includes(path))) {
           result.$set[path] = compare;
         }
       }

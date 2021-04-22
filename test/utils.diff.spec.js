@@ -144,6 +144,51 @@ describe('Test diff()', () => {
     });
   });
 
+  test('with white', () => {
+
+    let first = {
+      name: 1,
+      profile: {
+        surname: 'x',
+        avatar: {
+          code: 1,
+        },
+      },
+      someDeep: {
+        deep: {
+          superdeep: [200],
+        },
+      },
+    };
+
+    let second = {
+      name: 2,
+      profile: {
+        newSurname: 'x',
+        avatar: {
+          code: 1,
+          url: 'xxx',
+        },
+      }
+    };
+
+    const diff = utils.diff(first, second, [], '.', ["name", "profile", "profile.newSurname", "profile.surname"]);
+
+    console.log(diff);
+
+    expect(utils.plain(diff)).toEqual({
+      $set: {
+        "name": 2,
+        "profile.newSurname": "x",
+        //"profile.avatar.url": "xxx"
+      },
+      $unset: [
+        "profile.surname",
+        //"someDeep"
+      ]
+    });
+  });
+
 
   test('simple', () => {
     const first = {
