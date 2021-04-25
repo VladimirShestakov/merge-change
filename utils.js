@@ -318,6 +318,37 @@ const utils = {
     }
     return result;
   },
+
+  /**
+   * Проверка свойств в объекте. Вложенные свойства указываются с помощью пути на них через separator
+   * @param value {Object} Проверяемый объект, который должен содержать свойства condition
+   * @param condition {Object} Искомый объект, все свойства которые должны быть в value
+   * @param [separator] {string} Разделитель для вложенных свойств в condition
+   * @returns {boolean}
+   */
+  match: (value, condition = {}, separator = '.') => {
+    const flat = utils.plain(utils.flat(value, '', separator));
+    if (typeof condition !== 'object'){
+      return condition === flat;
+    }
+    const keys = Object.keys(condition);
+    for (const key of keys){
+      if (condition[key] !== flat[key]){
+        let arrayEq = false;
+        if (Array.isArray(condition[key]) && Array.isArray(flat[key]) && condition[key].length === flat[key].length){
+          arrayEq = true; // возможно совпадают
+          for (let i = 0; i < condition[key].length; i++){
+            if (!utils.match(flat[key][i], condition[key][i])){
+              arrayEq = false;
+              break;
+            }
+          }
+        }
+        if (!arrayEq) return false;
+      }
+    }
+    return true;
+  }
 };
 
 /**
