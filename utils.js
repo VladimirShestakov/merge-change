@@ -323,10 +323,11 @@ const utils = {
    * Проверка свойств в объекте. Вложенные свойства указываются с помощью пути на них через separator
    * @param value {Object} Проверяемый объект, который должен содержать свойства condition
    * @param condition {Object} Искомый объект, все свойства которые должны быть в value
+   * @param [data] {Object} Данные для подстановки в шаблон условия. Например '$session.user.name' в condition будет подставлено значением из data.session.user.name
    * @param [separator] {string} Разделитель для вложенных свойств в condition
    * @returns {boolean}
    */
-  match: (value, condition = {}, separator = '.') => {
+  match: (value, condition = {}, data = {}, separator = '.') => {
     const flat = utils.plain(utils.flat(value, '', separator));
     if (typeof condition !== 'object'){
       return condition === flat;
@@ -334,11 +335,17 @@ const utils = {
     const keys = Object.keys(condition);
     for (const key of keys){
       if (condition[key] !== flat[key]){
+        if (typeof condition[key] === 'string' && condition[key].substr(0,1) === '$'){
+          const realCondition = utils.get(data, condition[key].substr(1), undefined, separator);
+          if (realCondition === flat[key]){
+            break;
+          }
+        }
         let arrayEq = false;
         if (Array.isArray(condition[key]) && Array.isArray(flat[key]) && condition[key].length === flat[key].length){
           arrayEq = true; // возможно совпадают
           for (let i = 0; i < condition[key].length; i++){
-            if (!utils.match(flat[key][i], condition[key][i])){
+            if (!utils.match(flat[key][i], condition[key][i], data)){
               arrayEq = false;
               break;
             }

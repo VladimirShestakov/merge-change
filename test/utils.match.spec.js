@@ -73,5 +73,28 @@ describe('Test match()', () => {
       {prop1: date.toISOString()}
     )).toBe(true);
   });
+
+  test('match with template', () => {
+    expect(utils.match(
+      {prop1: '1', prop2: 'admin'},
+      {prop2: '$session.user.name'},
+      {
+        session: {
+          user: {
+            id: 1,
+            name: 'admin'
+          }
+        }
+      }
+    )).toBe(true);
+
+    expect(utils.match(
+      {prop1: '1', prop2: 'admin'},
+      {prop2: '$session.user.name'},
+      {
+        session: {}
+      }
+    )).toBe(false);
+  });
 });
 
