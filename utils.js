@@ -337,7 +337,7 @@ const utils = {
       if (condition[key] !== flat[key]){
         if (typeof condition[key] === 'string' && condition[key].substr(0,1) === '$'){
           const realCondition = utils.get(data, condition[key].substr(1), undefined, separator);
-          if (realCondition === flat[key]){
+          if (realCondition === flat[key] && key in flat){
             break;
           }
         }

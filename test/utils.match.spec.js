@@ -96,5 +96,17 @@ describe('Test match()', () => {
       }
     )).toBe(false);
   });
+
+  test('match with template when value not exists', () => {
+    expect(utils.match(
+      {prop1: '1', prop2: 'admin'},
+      {prop3: '$session.user.name'},
+      {
+        session: {
+          user: null
+        }
+      }
+    )).toBe(false);
+  });
 });
 
