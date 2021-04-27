@@ -48,7 +48,7 @@ const utils = {
     if (typeof path === 'number') {
       path = [path];
     }
-    if (typeof obj === 'undefined') {
+    if (typeof obj === 'undefined' || obj === null) {
       return defaultValue;
     }
     if (path.length === 0) {

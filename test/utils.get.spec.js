@@ -26,6 +26,14 @@ describe('Test get()', () => {
     expect(value).toEqual('value2');
   });
 
+  test('get if not exists or null', () => {
+    const data = {
+      prop: null,
+    };
+    expect(utils.get(data, '/prop/deep/superDeep', undefined, '/')).toEqual(undefined);
+    expect(utils.get(data, '/prop2/superDeep', undefined, '/')).toEqual(undefined);
+  });
+
   test('get from custom object', () => {
     class Custom {
       constructor(value = {}) {
