@@ -325,9 +325,11 @@ const utils = {
    * @param condition {Object} Искомый объект, все свойства которые должны быть в value
    * @param [data] {Object} Данные для подстановки в шаблон условия. Например '$session.user.name' в condition будет подставлено значением из data.session.user.name
    * @param [separator] {string} Разделитель для вложенных свойств в condition
+   * @param [errors] {Array} Если передать массив, то в него добавятся названия свойств, по которым нет совпадений
    * @returns {boolean}
    */
-  match: (value, condition = {}, data = {}, separator = '.') => {
+  match: (value, condition = {}, data = {}, separator = '.', errors) => {
+    let result = true;
     const flat = utils.plain(utils.flat(value, '', separator));
     if (typeof condition !== 'object'){
       return condition === flat;
@@ -345,16 +347,19 @@ const utils = {
         if (Array.isArray(condition[key]) && Array.isArray(flat[key]) && condition[key].length === flat[key].length){
           arrayEq = true; // возможно совпадают
           for (let i = 0; i < condition[key].length; i++){
-            if (!utils.match(flat[key][i], condition[key][i], data)){
+            if (!utils.match(flat[key][i], condition[key][i], data, separator)){
               arrayEq = false;
               break;
             }
           }
         }
-        if (!arrayEq) return false;
+        if (!arrayEq) {
+          if (errors) errors.push(key);
+          result = false;
+        }
       }
     }
-    return true;
+    return result;
   }
 };
 
