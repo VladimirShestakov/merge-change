@@ -26,7 +26,7 @@ MergeChange.prototype.KINDS = MergeChange.KINDS;
  * Closure on merge kind to handle any number of values
  * @param kind {String} Kind of merge from KINDS
  */
-MergeChange.prototype.prepareMerge = function(kind) {
+MergeChange.prototype.prepareMerge = function (kind) {
   return (...values) => {
     return values.reduce((first, second) => {
         const firstType = utils.type(first);
@@ -93,7 +93,7 @@ MergeChange.prototype.update = MergeChange.prototype.prepareMerge(MergeChange.KI
  * @param kind
  * @returns {*}
  */
-MergeChange.prototype.mergeAnyAny = function(first, second, kind){
+MergeChange.prototype.mergeAnyAny = function (first, second, kind) {
   return this[kind](undefined, second);
 }
 
@@ -117,7 +117,7 @@ MergeChange.prototype.mergeAnyAny = function(first, second, kind){
  * @param kind
  * @returns {*}
  */
-MergeChange.prototype.mergeAnyUndefined = function(first, second, kind){
+MergeChange.prototype.mergeAnyUndefined = function (first, second, kind) {
   return this[kind](undefined, first);
 }
 
@@ -132,7 +132,7 @@ MergeChange.prototype.mergeAnyUndefined = function(first, second, kind){
  * @param kind
  * @returns {*}
  */
-MergeChange.prototype.mergeUndefinedAny = function(first, second, kind){
+MergeChange.prototype.mergeUndefinedAny = function (first, second, kind) {
   return second;
 }
 
@@ -144,8 +144,8 @@ MergeChange.prototype.mergeUndefinedAny = function(first, second, kind){
  * @param kind
  * @returns {Date}
  */
-MergeChange.prototype.mergeUndefinedDate = function(first, second, kind){
-  return kind ===  MergeChange.KINDS.MERGE ? new Date(second) : second;
+MergeChange.prototype.mergeUndefinedDate = function (first, second, kind) {
+  return kind === MergeChange.KINDS.MERGE ? new Date(second) : second;
 }
 
 /**
@@ -156,8 +156,8 @@ MergeChange.prototype.mergeUndefinedDate = function(first, second, kind){
  * @param kind
  * @returns {Set}
  */
-MergeChange.prototype.mergeUndefinedSet = function(first, second, kind){
-  return kind ===  MergeChange.KINDS.MERGE ? new Set(second) : second;
+MergeChange.prototype.mergeUndefinedSet = function (first, second, kind) {
+  return kind === MergeChange.KINDS.MERGE ? new Set(second) : second;
 }
 
 /**
@@ -168,8 +168,8 @@ MergeChange.prototype.mergeUndefinedSet = function(first, second, kind){
  * @param kind
  * @returns {Map}
  */
-MergeChange.prototype.mergeUndefinedMap = function(first, second, kind){
-  return kind ===  MergeChange.KINDS.MERGE ? new Map(second) : second;
+MergeChange.prototype.mergeUndefinedMap = function (first, second, kind) {
+  return kind === MergeChange.KINDS.MERGE ? new Map(second) : second;
 }
 
 /**
@@ -180,7 +180,7 @@ MergeChange.prototype.mergeUndefinedMap = function(first, second, kind){
  * @param kind
  * @returns {WeekSet}
  */
-MergeChange.prototype.mergeUndefinedWeekSet = function(first, second, kind) {
+MergeChange.prototype.mergeUndefinedWeekSet = function (first, second, kind) {
   return kind === MergeChange.MERGE ? new WeakSet(second) : second;
 }
 
@@ -192,8 +192,8 @@ MergeChange.prototype.mergeUndefinedWeekSet = function(first, second, kind) {
  * @param kind
  * @returns {WeekMap}
  */
-MergeChange.prototype.mergeUndefinedWeekMap = function(first, second, kind){
-  return kind ===  MergeChange.KINDS.MERGE ? new WeakMap(second) : second;
+MergeChange.prototype.mergeUndefinedWeekMap = function (first, second, kind) {
+  return kind === MergeChange.KINDS.MERGE ? new WeakMap(second) : second;
 }
 
 /**
@@ -204,8 +204,8 @@ MergeChange.prototype.mergeUndefinedWeekMap = function(first, second, kind){
  * @param kind
  * @returns {Array}
  */
-MergeChange.prototype.mergeUndefinedArray = function(first, second, kind){
-  return kind ===  MergeChange.KINDS.MERGE ? this.mergeArrayArray([], second, kind) : second;
+MergeChange.prototype.mergeUndefinedArray = function (first, second, kind) {
+  return kind === MergeChange.KINDS.MERGE ? this.mergeArrayArray([], second, kind) : second;
 }
 
 /**
@@ -217,8 +217,9 @@ MergeChange.prototype.mergeUndefinedArray = function(first, second, kind){
  * @param kind
  * @returns {Object}
  */
-MergeChange.prototype.mergeUndefinedObject = function(first, second, kind){
-  return kind ===  MergeChange.KINDS.MERGE ? this.mergeObjectObject({}, second, kind) : second;
+MergeChange.prototype.mergeUndefinedObject = function (first, second, kind) {
+  const operations = this.extractOperations(second);
+  return this.mergeObjectObject(second, operations, kind);
 }
 
 /**
@@ -228,15 +229,15 @@ MergeChange.prototype.mergeUndefinedObject = function(first, second, kind){
  * @param kind
  * @returns {Object}
  */
-MergeChange.prototype.mergeObjectObject = function(first, second, kind){
+MergeChange.prototype.mergeObjectObject = function (first, second, kind) {
   let result = kind === MergeChange.KINDS.PATCH ? first : {};
   let resultField;
   let isChange = kind === MergeChange.KINDS.MERGE;
   let operations = [];
   const keysFirst = Object.keys(first);
   const keysSecond = new Set(Object.keys(second));
-  for (const key of keysFirst){
-    if (key in second){
+  for (const key of keysFirst) {
+    if (key in second) {
       resultField = this[kind](first[key], second[key]);
       keysSecond.delete(key);
     } else {
@@ -246,8 +247,8 @@ MergeChange.prototype.mergeObjectObject = function(first, second, kind){
     result[key] = resultField;
   }
   // find declarative operations
-  for (const key of keysSecond){
-    if (this.isOperation(key)){
+  for (const key of keysSecond) {
+    if (this.isOperation(key)) {
       operations.push([key, second[key]]);
     } else {
       resultField = this[kind](undefined, second[key]);
@@ -256,7 +257,7 @@ MergeChange.prototype.mergeObjectObject = function(first, second, kind){
     }
   }
   // execute declarative operations
-  for (const [operation, params] of operations){
+  for (const [operation, params] of operations) {
     isChange = this.operation(result, operation, params) || isChange;
   }
   return isChange ? result : first;
@@ -271,8 +272,8 @@ MergeChange.prototype.mergeObjectObject = function(first, second, kind){
  * @param kind
  * @returns {Array}
  */
-MergeChange.prototype.mergeArrayArray = function(first, second, kind){
-  if (kind === MergeChange.KINDS.MERGE){
+MergeChange.prototype.mergeArrayArray = function (first, second, kind) {
+  if (kind === MergeChange.KINDS.MERGE) {
     return second.map(item => this[kind](undefined, item));
   }
   return second;
@@ -284,8 +285,25 @@ MergeChange.prototype.mergeArrayArray = function(first, second, kind){
  * @param [params]
  * @returns {boolean}
  */
-MergeChange.prototype.isOperation = function(operation, params){
+MergeChange.prototype.isOperation = function (operation, params) {
   return Boolean(this[`operation${operation}`]);
+}
+
+/**
+ * Extract operations from object
+ * @param object
+ * @returns {Object}
+ */
+MergeChange.prototype.extractOperations = function (object) {
+  let result = {};
+  const keys = Object.keys(object);
+  for (const key of keys) {
+    if (this.isOperation(key, object[key])) {
+      result[key] = object[key];
+      delete object[key];
+    }
+  }
+  return result;
 }
 
 /**
@@ -295,9 +313,9 @@ MergeChange.prototype.isOperation = function(operation, params){
  * @param params
  * @returns {*}
  */
-MergeChange.prototype.operation = function(source, operation, params){
+MergeChange.prototype.operation = function (source, operation, params) {
   const method = `operation${operation}`;
-  if (this[method]){
+  if (this[method]) {
     return this[method](source, params);
   }
 }
@@ -308,7 +326,7 @@ MergeChange.prototype.operation = function(source, operation, params){
  * @param params Объект со свойствами, которые нужно добавить без слияния. Ключи свойств могут быть путями с учётом вложенности
  * @returns {boolean}
  */
-MergeChange.prototype.operation$set = function(source, params){
+MergeChange.prototype.operation$set = function (source, params) {
   const fieldNames = Object.keys(params);
   for (const fieldName of fieldNames) {
     utils.set(source, fieldName, params[fieldName]);
@@ -323,8 +341,8 @@ MergeChange.prototype.operation$set = function(source, params){
  * @param params Массив путей на удаляемые свойства. Учитывается вложенность
  * @returns {boolean}
  */
-MergeChange.prototype.operation$unset = function(source, params){
-  if (Array.isArray(params)){
+MergeChange.prototype.operation$unset = function (source, params) {
+  if (Array.isArray(params)) {
     // Перечень полей для удаления
     for (const fieldName of params) {
       utils.unset(source, fieldName);
@@ -341,42 +359,40 @@ MergeChange.prototype.operation$unset = function(source, params){
  * @param params Массив свойств, которые не надо удалять
  * @returns {boolean}
  */
-MergeChange.prototype.operation$leave = function(source, params){
-  if (Array.isArray(params)){
+MergeChange.prototype.operation$leave = function (source, params) {
+  if (Array.isArray(params)) {
     if (source && typeof source[methods.toOperation] === 'function') {
       source = source[methods.toOperation]();
     } else if (source && typeof source.toJSON === 'function') {
       source = source.toJSON();
     }
     const names = {};
-    for (const param of params){
+    for (const param of params) {
       let name = param;
       let subPath = '';
-      if (typeof param === 'string'){
+      if (typeof param === 'string') {
         [name, subPath] = param.split('.');
       }
-      if (!names[name]){
+      if (!names[name]) {
         names[name] = [];
       }
-      if (subPath){
+      if (subPath) {
         names[name].push(subPath);
       }
     }
     const type = utils.type(source);
-    if (type === 'Object'){
+    if (type === 'Object') {
       const keys = Object.keys(source);
-      for (const key of keys){
-        if (!names[key]){
+      for (const key of keys) {
+        if (!names[key]) {
           delete source[key];
-        } else
-        if (names[key].length > 0){
+        } else if (names[key].length > 0) {
           this.operation$leave(source[key], names[key]);
         }
       }
-    } else
-    if (type === 'Array'){
-      for (let key=source.length - 1; key>=0; key--){
-        if (!(key in names)){
+    } else if (type === 'Array') {
+      for (let key = source.length - 1; key >= 0; key--) {
+        if (!(key in names)) {
           source.splice(key, 1);
         }
       }
@@ -393,7 +409,7 @@ MergeChange.prototype.operation$leave = function(source, params){
  * @param params
  * @returns {boolean}
  */
-MergeChange.prototype.operation$pull = function(source, params){
+MergeChange.prototype.operation$pull = function (source, params) {
   if (source && typeof source[methods.toOperation] === 'function') {
     source = source[methods.toOperation]();
   } else if (source && typeof source.toJSON === 'function') {
@@ -404,8 +420,8 @@ MergeChange.prototype.operation$pull = function(source, params){
     const cond = params[path];
     const array = utils.get(source, path, []);
     if (Array.isArray(array)) {
-      for (let i=array.length - 1; i>=0; i--){
-        if (utils.equal(cond, array[i])){
+      for (let i = array.length - 1; i >= 0; i--) {
+        if (utils.equal(cond, array[i])) {
           source.splice(i, 1);
         }
       }
@@ -423,7 +439,7 @@ MergeChange.prototype.operation$pull = function(source, params){
  * @param params
  * @returns {boolean}
  */
-MergeChange.prototype.operation$push = function(source, params) {
+MergeChange.prototype.operation$push = function (source, params) {
   if (source && typeof source[methods.toOperation] === 'function') {
     source = source[methods.toOperation]();
   } else if (source && typeof source.toJSON === 'function') {
@@ -450,7 +466,7 @@ MergeChange.prototype.operation$push = function(source, params) {
  * @param params
  * @returns {boolean}
  */
-MergeChange.prototype.operation$concat = function(source, params) {
+MergeChange.prototype.operation$concat = function (source, params) {
   if (source && typeof source[methods.toOperation] === 'function') {
     source = source[methods.toOperation]();
   } else if (source && typeof source.toJSON === 'function') {
@@ -477,7 +493,7 @@ MergeChange.prototype.operation$concat = function(source, params) {
  * @param callback {Function} Merge function with argument: (first, second, kind)
  * @returns {*} The previous merge method
  */
-MergeChange.prototype.addMerge = function(type1, type2, callback){
+MergeChange.prototype.addMerge = function (type1, type2, callback) {
   const method = `merge${type1}${type2}`;
   const current = MergeChange.prototype[method];
   MergeChange.prototype[method] = callback;
@@ -490,8 +506,8 @@ MergeChange.prototype.addMerge = function(type1, type2, callback){
  * @param callback {Function} Operation function with argument: (source, params)
  * @returns {*} The previous operation method
  */
-MergeChange.prototype.addOperation = function(name, callback){
-  if (name.substr(0,1)!=='$'){
+MergeChange.prototype.addOperation = function (name, callback) {
+  if (name.substr(0, 1) !== '$') {
     name = '$' + name;
   }
   const method = `operation${name}`;

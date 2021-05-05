@@ -1,6 +1,6 @@
 {
   "name": "merge-change",
-  "version": "1.6.10",
+  "version": "1.6.11",
   "description": "Simple library for deep merge of objects and other types (also for patch and immutable updates). Declarative operations to specific merge, for example to remove properties. Customize merging between specific types. Calculating diffs.",
   "main": "index.js",
   "scripts": {
