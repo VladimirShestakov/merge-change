@@ -196,15 +196,16 @@ const utils = {
   /**
    * Вычисление разницы, результатом является объект с операторами $set и $unset
    * @param source {*} Исходное значение
-   * @param compare] {*} Сравниваемое (новое) значение
+   * @param compare {*} Сравниваемое (новое) значение
    * @param [ignore] {Array<string>} Названия игнорируемых свойств
    * @param [separator] {String} разделитель в путях на вложенные свойства
    * @param [white] {Array<string>} Названия сравниваемых свойств, если массив не пустой
    * @param [path] {String} Путь на текущее свойство в рекурсивной обработке
+   * @param [equal] {Function} Функция сравнения значений
    * @param [result] {String} Возвращаемый результат в рекурсивной обработке. Не следует использовать.
    * @returns {{$unset: [], $set: {}}}
    */
-  diff: (source, compare, ignore = [], separator = '.', white = [], path = '', result) => {
+  diff: (source, compare, {ignore = [], separator = '.', white = [], path = '', equal = utils.equal}, result) => {
     if (!result) {
       result = {$set: {}, $unset: []};
     }
@@ -228,8 +229,8 @@ const utils = {
             result.$set[p] = comparePlain[key];
           } else
             // change property
-          if (comparePlain[key] !== sourcePlain[key]) {
-            utils.diff(sourcePlain[key], comparePlain[key], ignore, separator, white, p, result);
+          if (!equal(comparePlain[key], sourcePlain[key])) {
+            utils.diff(sourcePlain[key], comparePlain[key], {ignore, separator, white, path: p, equal}, result);
           }
         }
       }

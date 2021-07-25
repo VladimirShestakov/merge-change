@@ -355,7 +355,7 @@ Useful functions - utilities
 const utils = require('merge-change').utils;
 ```
 
-### `utils.diff(source, compare, ignore = [], separator = '.')`
+### `utils.diff(source, compare, {ignore = [], separator = '.'})`
 
 To calculate the difference between `source` and `compare` value. 
 The return value is an object with `$set` and `$unset` operators. Return value can be used in merge functions.
@@ -386,7 +386,7 @@ const second = {
   access: [700]
 }
 
-const diff = utils.diff(first, second, ['secret'], '/');
+const diff = utils.diff(first, second, {ignore: ['secret'], separator: '/'});
 ```
 Result (diff)
 ```

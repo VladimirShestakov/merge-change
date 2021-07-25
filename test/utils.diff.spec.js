@@ -69,7 +69,7 @@ describe('Test diff()', () => {
       },
     };
 
-    const diff = utils.diff(first, second);
+    const diff = utils.diff(first, second, {});
 
     expect(utils.plain(diff)).toEqual({
       $set: {
@@ -129,7 +129,7 @@ describe('Test diff()', () => {
       }
     };
 
-    const diff = utils.diff(first, second, ['someDeep', 'profile.avatar.url']);
+    const diff = utils.diff(first, second, {ignore: ['someDeep', 'profile.avatar.url']});
 
     expect(utils.plain(diff)).toEqual({
       $set: {
@@ -172,7 +172,7 @@ describe('Test diff()', () => {
       }
     };
 
-    const diff = utils.diff(first, second, [], '.', ["name", "profile", "profile.newSurname", "profile.surname"]);
+    const diff = utils.diff(first, second, {white: ["name", "profile", "profile.newSurname", "profile.surname"]});
 
     console.log(diff);
 
@@ -214,19 +214,56 @@ describe('Test diff()', () => {
       access: [700]
     }
 
-    const diff = utils.diff(first, second, '/');
+    const diff = utils.diff(first, second, {separator: '.'});
 
     expect(diff).toEqual({
       $set: {
         'login': 'value',
         'profile.surname': 'Surname2',
         'profile.avatar.url': 'new/pic.png',
-        'access': [ 700 ]
+        'access': [700]
       },
       $unset: [
         'profile.birthday',
         'name'
       ]
     });
-  })
+  });
+
+
+  test('custom compare', () => {
+    const first = {
+      number: '10',
+      text: '10',
+      double: 12.26275240000001,
+      double2: 12.12345
+    }
+
+    const second = {
+      number: 10,
+      text: 'ten',
+      double: 12.2627524,
+      double2: 12.12346
+    }
+
+    const diff = utils.diff(first, second, {
+      equal: (first, second) => {
+        if (first === second) return true;
+        first = typeof first === 'string' ? Number(first.replace(/\s/g, '').replace(/,/g, '.')) : Number(first);
+        second = typeof second === 'string' ? Number(second.replace(/\s/g, '').replace(/,/g, '.')) : Number(second);
+        if (!Number.isNaN(first) && first !== null && !Number.isNaN(second) && second !== null) {
+          return Math.abs(first - second) < 0.00000001
+        }
+        return false;
+      }
+    });
+
+    expect(diff).toEqual({
+      $set: {
+        double2: 12.12346,
+        text: 'ten',
+      },
+      $unset: []
+    });
+  });
 });
