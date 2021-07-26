@@ -183,6 +183,30 @@ Result
  }
  ```
 
+#### To unset all fields used `*`
+
+ ```js
+ const result = mc.merge(
+   {
+     a: {
+       one: 1, 
+       two: 2
+     }
+   }, 
+   {
+     $unset: ['a.*']
+   }
+ );
+ console.log(result);
+ ```
+
+Result
+ ```json
+ {
+   "a": {}
+ }
+ ```
+
 ### `$leave`
 
 To leave properties by name (or path). All other properties will be removed.
