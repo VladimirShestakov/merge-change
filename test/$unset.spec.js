@@ -54,5 +54,17 @@ describe('Test $unset', () => {
     });
   });
 
+  test('clear root object', () => {
+    const first = {
+      f1: {a1: [1,2,3,4,5], a2: 11, a3: 12},
+      f2: 10,
+    };
+    const second = {
+      $unset: ['*'],
+    };
+    const result = mc.merge(first, second);
+    expect(result).toEqual({});
+  });
+
 });
 

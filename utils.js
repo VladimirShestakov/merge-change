@@ -24,6 +24,21 @@ const utils = {
 
     const currentPath = path[0];
 
+    if (currentPath === '*'){
+      const type = utils.type(obj);
+      // Очистка всех свойств объекта
+      if (type === 'Object'){
+        const keys = Object.keys(obj);
+        for (const key of keys){
+          delete obj[key];
+        }
+      } else
+      if (type === 'Array'){
+        obj.splice(0, obj.length);
+      }
+      return obj;
+    }
+
     if (path.length === 1) {
       if (Array.isArray(obj)) {
         obj.splice(currentPath, 1);
@@ -31,7 +46,12 @@ const utils = {
         delete obj[currentPath];
       }
     } else {
-      return utils.unset(obj[currentPath], path.slice(1));
+      const type = utils.type(obj[currentPath]);
+      if (path[1] === '*' && type !== 'Object' && type !== 'Array'){
+        obj[currentPath] = undefined;
+      } else {
+        return utils.unset(obj[currentPath], path.slice(1));
+      }
     }
     return obj;
   },

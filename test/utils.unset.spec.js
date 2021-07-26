@@ -54,5 +54,36 @@ describe('Test unset()', () => {
     });
   });
 
+
+  test('unset all props', () => {
+    const data = {
+      prop: 1,
+      sub: {
+        name: 2,
+        list: [1, 2]
+      },
+    };
+    utils.unset(data, '*');
+    expect(utils.plain(data)).toStrictEqual({ });
+  });
+
+  test('unset array', () => {
+    const data = {
+      prop: 1,
+      list: [1, 2],
+    };
+    utils.unset(data, 'list.*');
+    expect(utils.plain(data)).toStrictEqual({prop: 1, list: [] });
+  });
+
+  test('unset number', () => {
+    const data = {
+      prop: 5,
+    };
+    utils.unset(data, 'prop.*');
+    expect(utils.plain(data)).toStrictEqual({prop: undefined });
+  });
+
+
 });
 
