@@ -1,6 +1,6 @@
 {
   "name": "merge-change",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Simple library for deep merge of objects and other types (also for patch and immutable updates). Declarative operations to specific merge, for example to remove properties. Customize merging between specific types. Calculating diffs.",
   "main": "index.js",
   "scripts": {
@@ -42,7 +42,7 @@
   "homepage": "https://github.com/VladimirShestakov/merge-change.git#readme",
   "dependencies": {},
   "devDependencies": {
-    "eslint": "^7.17.0",
-    "jest": "^26.6.3"
+    "eslint": "^7.31.0",
+    "jest": "^27.0.6"
   }
 }

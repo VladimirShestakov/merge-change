@@ -97,5 +97,10 @@ describe('Test type()', () => {
     const newState = utils.type(new Map());
     expect(newState).toEqual('Map');
   });
+
+  test('Object without proto', () => {
+    const obj = Object.create(null);
+    expect('Object').toEqual('Object');
+  })
 });
 

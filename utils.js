@@ -161,6 +161,9 @@ const utils = {
     if (typeof value === 'undefined') {
       return 'Undefined';
     }
+    if (!value.__proto__){
+      return 'Object';
+    }
     return Object.getPrototypeOf(value).constructor.name;
   },
 
