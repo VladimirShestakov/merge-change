@@ -24,6 +24,9 @@ const utils = {
 
     const currentPath = path[0];
 
+    if (utils.isPrototypePollutionProp(currentPath)) {
+      throw new Error('Denying write access to prototype prop.');
+    }
     if (currentPath === '*'){
       const type = utils.type(obj);
       // Очистка всех свойств объекта
@@ -103,6 +106,10 @@ const utils = {
     }
     const currentPath = path[0];
     const currentValue = obj[currentPath];
+
+    if (utils.isPrototypePollutionProp(currentPath)) {
+      throw new Error('Denying write access to prototype prop.');
+    }
     if (path.length === 1) {
       // Если последний элемент пути, то установка значения
       if (!doNotReplace || currentValue === void 0) {
@@ -384,6 +391,17 @@ const utils = {
       }
     }
     return result;
+  },
+
+  /**
+   * A prototype pollution property?
+   *
+   * @param [prop] {string} Property to check.
+   * @return {boolean} True if a prototype pollution property.
+   * @internal Security fix, see: <https://github.com/advisories/GHSA-f9cv-665r-275h>
+   */
+  isPrototypePollutionProp: (prop) => {
+    return ['__proto__', 'constructor', 'prototype'].includes(prop);
   }
 };
 
