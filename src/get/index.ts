@@ -7,6 +7,10 @@ export function get<D, P extends ExtractPaths<D, S>, S extends string = '.'>(
   separator: S = '.' as S,
 ): PathToType<D, P, S> {
   const parts = path.split(separator);
+  // Если путь начинается с разделителя, первый элемент будет пустой строкой, удаляем его
+  if (parts[0] === '') {
+    parts.shift();
+  }
   let current: unknown = data;
 
   for (const part of parts) {
