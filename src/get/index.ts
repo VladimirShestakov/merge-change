@@ -1,6 +1,6 @@
-import { ExtractPaths, PathToType, Separator, Value } from './types';
+import { ExtractPaths, PathToType } from './types';
 
-export function get<D, P extends ExtractPaths<D, S>, S extends Separator>(
+export function get<D, P extends ExtractPaths<D, S>, S extends string = '.'>(
   data: D,
   path: P,
   defaultValue: unknown = undefined,
