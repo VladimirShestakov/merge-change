@@ -3,12 +3,16 @@ import { hasMethod } from '../has-method';
 import { splitPath } from '../split-path';
 import { ObjectValue, PropertyParts, PropertyPath } from '../common-types/types';
 
-export function unset<Type>(value: Type, path: PropertyPath | PropertyParts): Type {
+export function unset<Type>(
+  value: Type,
+  path: PropertyPath | PropertyParts,
+  separator: string = '.',
+): Type {
   if (hasMethod(value, 'toJSON')) value = value.toJSON() as Type;
   if (value === null || typeof value === 'undefined') return value;
   if (typeof path === 'number') path = [path];
   if (!path) return value;
-  if (typeof path === 'string') return unset(value, splitPath(path));
+  if (typeof path === 'string') return unset(value, splitPath(path, separator), separator);
 
   const currentPath = path[0];
 
@@ -45,7 +49,7 @@ export function unset<Type>(value: Type, path: PropertyPath | PropertyParts): Ty
     if (path[1] === '*' && t !== 'object' && t !== 'Array') {
       obj[currentPath] = undefined;
     } else {
-      return unset(nextValue as unknown as Type, path.slice(1));
+      return unset(nextValue as unknown as Type, path.slice(1), separator);
     }
   }
   return value;

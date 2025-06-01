@@ -1,7 +1,7 @@
 {
   "name": "merge-change",
-  "version": "2.0.0",
-  "description": "Simple library for deep merge of objects and other types (also for patch and immutable updates). Declarative operations to specific merge, for example to remove properties. Customize merging between specific types. Calculating diffs.",
+  "version": "3.0.0",
+  "description": "Advanced library for deep merging, patching, and immutable updates of data structures. Features declarative operations for specific merging behaviors, property management, custom type merging rules, and difference tracking. Supports complex data transformations with a simple API.",
   "main": "src/index.ts",
   "module": "src/index.ts",
   "types": "src/index.ts",
