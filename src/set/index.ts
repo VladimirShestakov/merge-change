@@ -1,12 +1,12 @@
 import { splitPath } from '../split-path';
 
 /**
- * Установка значения по пути. Если в obj путь не найден, то будут созданы соотв свойство
- * @param obj - Объект, в который устанавливается значение
- * @param path - Путь в объекте, по которому устанавливается значение
- * @param value - Устанавливаемое значение
- * @param skipExisting - Если true, не заменять существующие значения (установка только при отсутствии)
- * @returns Предыдущее значение по указанному пути
+ * Sets a value at the specified path. If the path is not found in obj, the corresponding property will be created
+ * @param obj - Object in which the value is set
+ * @param path - Path in the object where the value is set
+ * @param value - Value to be set
+ * @param skipExisting - If true, do not replace existing values (set only if absent)
+ * @returns Previous value at the specified path
  */
 export function set(obj: any, path: any, value: any, skipExisting: boolean = false): any {
   if (obj && typeof obj.toJSON === 'function') {
@@ -24,13 +24,13 @@ export function set(obj: any, path: any, value: any, skipExisting: boolean = fal
   const currentPath = path[0];
   const currentValue = obj[currentPath];
   if (path.length === 1) {
-    // Если последний элемент пути, то установка значения
+    // If it's the last element of the path, set the value
     if (!skipExisting || currentValue === void 0) {
       obj[currentPath] = value;
     }
     return currentValue;
   }
-  // Если путь продолжается, а текущего элемента нет, то создаётся пустой объект
+  // If the path continues but the current element doesn't exist, an empty object is created
   if (currentValue === void 0) {
     obj[currentPath] = {};
   }

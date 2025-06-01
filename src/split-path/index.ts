@@ -1,10 +1,10 @@
 /**
- * Раздение пути на элементы массива с игнором (обрезкой) разделителя вначале и конце строки
- * @param path {string} Путь для разделения
- * @param separator {string} Разделитель, например слэш
+ * Splits a path into array elements, ignoring (trimming) the separator at the beginning and end of the string
+ * @param path {string} Path to split
+ * @param separator {string} Separator, for example, a point
  * @returns {(number|string)[]}
  */
-export function splitPath(path: string, separator = '.'): Array<string | number> {
+export function splitPath(path: string, separator: string = '.'): Array<string | number> {
   if (path.substring(0, separator.length) === separator) {
     path = path.substring(separator.length);
   }

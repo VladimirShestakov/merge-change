@@ -3,11 +3,11 @@ import { get } from '../get';
 import { flat } from '../flat';
 
 /**
- * Проверка свойств в объекте. Вложенные свойства указываются с помощью пути на них через separator
- * @param value {Object} Проверяемый объект, который должен содержать свойства condition
- * @param condition {Object} Искомый объект, все свойства которые должны быть в value
- * @param [data] {Object} Данные для подстановки в шаблон условия. Например '$session.user.name' в condition будет подставлено значением из data.session.user.name
- * @param [errors] {Array} Если передать массив, то в него добавятся названия свойств, по которым нет совпадений
+ * Checking properties in an object. Nested properties are specified using a path to them through separator
+ * @param value {Object} Object to check, which should contain condition properties
+ * @param condition {Object} Target object, all properties of which should be in value
+ * @param [data] {Object} Data for substitution in the condition template. For example, '$session.user.name' in condition will be substituted with the value from data.session.user.name
+ * @param [errors] {Array} If an array is passed, the names of properties that don't match will be added to it
  * @returns {boolean}
  */
 export function match(
@@ -17,7 +17,7 @@ export function match(
   errors: any = undefined,
 ): boolean {
   let result = true;
-  const flatValue = plain(flat(value, ''));
+  const flatValue = plain(flat(value, '.'));
   if (typeof condition !== 'object') {
     return condition === flatValue;
   }
@@ -36,7 +36,7 @@ export function match(
         Array.isArray(flatValue[key]) &&
         condition[key].length === flatValue[key].length
       ) {
-        arrayEq = true; // возможно совпадают
+        arrayEq = true; // possibly match
         for (let i = 0; i < condition[key].length; i++) {
           if (!match(flatValue[key][i], condition[key][i], data)) {
             arrayEq = false;

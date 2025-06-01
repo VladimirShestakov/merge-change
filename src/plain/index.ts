@@ -1,11 +1,11 @@
 import { type } from '../type';
 
 /**
- * Конвертирует структуру данных через рекурсивный вызов методов toPlain или toJSON если они есть у каждого значения.
- * Если метода нет, возвращается исходное значение.
- * Значения для которых нет метода call останутся в исходном значении.
- * @param value {*} Значение для конвертации
- * @param [recursive] {Boolean} Выполнить вложенную обработку
+ * Converts a data structure through recursive calls to toPlain or toJSON methods if they exist for each value.
+ * If the method doesn't exist, the original value is returned.
+ * Values for which there is no call method will remain in their original value.
+ * @param value {*} Value for conversion
+ * @param [recursive] {Boolean} Perform nested processing
  * @returns {*}
  */
 export function plain(value: any, recursive = true): any {

@@ -1,9 +1,9 @@
 import { HasMethod } from './types';
 
 /**
- * Проверка наличия метода по его названию с подтверждением для TypeScript
- * @param value Проверяемый объект
- * @param method Название метода
+ * Checking for the presence of a method by its name with confirmation for TypeScript
+ * @param value Object to check
+ * @param method Method name
  */
 export function hasMethod<M extends string | number | symbol>(
   value: HasMethod<M> | unknown,

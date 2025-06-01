@@ -1,28 +1,37 @@
 import { type } from '../type';
+import { hasMethod } from '../has-method';
+import type { ObjectValueDeep } from '../common-types/types';
+import type { FlatObject } from './types';
 
 /**
- * Конвертация вложенной структуры в плоскую
- * Названия свойств превращаются в путь {a: {b: 0}} => {'a.b': 0}
- * @param value {object|*} Исходный объекты для конвертации
- * @param [path] {string} Базовый путь для формирования ключей плоского объекта. Используется для рекурсии.
- * @param [clearUndefined] {boolean} Признак, добавлять ли в результат неопределенные значения
- * @param [result] {object} Результат - плоский объект. Передаётся по ссылки для рекурсии
+ * Converting a nested structure to a flat one
+ * Property names are transformed into a path {a: {b: 0}} => {'a.b': 0}
+ * @param value {object|*} Source objects for conversion
+ * @param separator
+ * @param [path] {string} Base path for forming keys of the flat object. Used for recursion.
+ * @param [clearUndefined] {boolean} Flag indicating whether to add undefined values to the result
+ * @param [result] {object} Result - flat object. Passed by reference for recursion
  * @returns {{}}
  */
-export function flat(value: any, path: string = '', clearUndefined = false, result: any = {}) {
-  if (value && typeof value.toJSON === 'function') {
-    value = value.toJSON();
-  } else {
-    //value = value.valueOf();
-  }
+export function flat<V, S extends string = '.', P extends string = '', R = FlatObject<V, S>>(
+  value: V,
+  separator: S = '.' as S,
+  clearUndefined: boolean = false,
+  path: P = '' as P,
+  result: R = {} as R,
+): R {
+  if (hasMethod(value, 'toJSON')) value = value.toJSON() as V;
   if (type(value) === 'object') {
-    for (const [key, item] of Object.entries(value)) {
-      flat(item, path ? `${path}.${key}` : key, clearUndefined, result);
+    const valueObject = value as ObjectValueDeep;
+    for (const [key, item] of Object.entries(valueObject)) {
+      flat(item, separator, clearUndefined, path ? `${path}${separator}${key}` : key, result);
     }
   } else if (!clearUndefined || typeof value !== 'undefined') {
     if (path === '') {
-      result = value;
+      result = value as unknown as R;
     } else {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       result[path] = value;
     }
   }

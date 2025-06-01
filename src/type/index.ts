@@ -3,7 +3,7 @@ import { Type } from './types';
 const toLowerCase = new Set(['Number', 'String', 'Boolean', 'Object', 'Symbol']);
 
 /**
- * Тип значения - название конструктора
+ * Type of value - constructor name
  * @param value
  */
 export function type(value: unknown): Type {
@@ -22,16 +22,8 @@ export function type(value: unknown): Type {
   return toLowerCase.has(name) ? name.toLowerCase() : name;
 }
 
-export function isPlainObject(value: unknown): value is Record<string | number | symbol, unknown> {
-  return type(value) === 'object';
-}
-
-export function isArray(value: unknown): value is unknown[] {
-  return type(value) === 'Array';
-}
-
 /**
- * Все типы экземпляра по цепочке их наследования
+ * All instance types along their inheritance chain
  * @param value
  */
 export function typeChain(value: unknown): Array<Type> {
@@ -54,9 +46,9 @@ export function typeChain(value: unknown): Array<Type> {
 }
 
 /**
- * Проверка принадлежности к классу (конструктору) по строковому названию класса (конструктора)
- * @param value Значение для проверки
- * @param className Название класса (конструктора)
+ * Checking if a value belongs to a class (constructor) by the string name of the class (constructor)
+ * @param value Value to check
+ * @param className Name of the class (constructor)
  */
 export function isInstanceof<Type = unknown>(value: unknown, className: string): value is Type {
   if (value === null) {

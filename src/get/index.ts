@@ -1,13 +1,23 @@
-import { ExtractPaths, PathToType } from './types';
+import { ExtractPathsAny, PathToType } from '../common-types/types';
 
-export function get<D, P extends ExtractPaths<D, S>, S extends string = '.'>(
+/**
+ * Retrieves the value at the specified path in a deeply nested data structure. If the path does not exist,
+ * the function returns the provided default value.
+ *
+ * @param data - The data object or array from which to retrieve the value.
+ * @param path - The path string to the desired value, with parts separated by the specified separator.
+ * @param [defaultValue=undefined] - The value to return if the path does not exist.
+ * @param [separator='.'] - The string used to separate path segments. Defaults to '.'.
+ * @return The value at the specified path in the data structure or the default value if the path is invalid.
+ */
+export function get<D, P extends ExtractPathsAny<D, S>, S extends string = '.'>(
   data: D,
   path: P,
   defaultValue: unknown = undefined,
   separator: S = '.' as S,
 ): PathToType<D, P, S> {
   const parts = path.split(separator);
-  // Если путь начинается с разделителя, первый элемент будет пустой строкой, удаляем его
+  // If the path starts with a separator, the first element will be an empty string, remove it
   if (parts[0] === '') {
     parts.shift();
   }

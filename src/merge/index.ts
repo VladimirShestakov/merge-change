@@ -8,7 +8,7 @@ import {
 } from './types';
 import { type } from '../type';
 import { defaultOperations, extractOperations, isOperation } from './operations';
-import { ObjectValue } from '../common-types';
+import { ObjectValue } from '../common-types/types';
 
 // Default methods for handling different type combinations
 const defaultMethods: MergeMethods = {
@@ -18,26 +18,16 @@ const defaultMethods: MergeMethods = {
   unknown_undefined(first: any, second: undefined, kind: MergeChangeKind, mc: MergeChangeFn) {
     return mc(undefined, first);
   },
-  undefined_unknown(first: undefined, second: any, kind: MergeChangeKind, mc: MergeChangeFn) {
+  undefined_unknown(first: undefined, second: any) {
     return second;
   },
-  undefined_Date(first: undefined, second: Date, kind: MergeChangeKind, mc: MergeChangeFn) {
+  undefined_Date(first: undefined, second: Date, kind: MergeChangeKind) {
     return kind === MergeChangeKind.MERGE ? new Date(second) : second;
   },
-  undefined_Set<T extends Set<any>>(
-    first: undefined,
-    second: T,
-    kind: MergeChangeKind,
-    mc: MergeChangeFn,
-  ): T {
+  undefined_Set<T extends Set<any>>(first: undefined, second: T, kind: MergeChangeKind): T {
     return kind === MergeChangeKind.MERGE ? (new Set(second) as T) : second;
   },
-  undefined_Map<T extends Map<any, any>>(
-    first: undefined,
-    second: T,
-    kind: MergeChangeKind,
-    mc: MergeChangeFn,
-  ): T {
+  undefined_Map<T extends Map<any, any>>(first: undefined, second: T, kind: MergeChangeKind): T {
     return kind === MergeChangeKind.MERGE ? (new Map(second) as T) : second;
   },
   undefined_Array(first: undefined, second: any[], kind: MergeChangeKind, mc: MergeChangeFn) {

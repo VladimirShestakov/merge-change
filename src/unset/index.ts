@@ -1,15 +1,10 @@
-import type { HasToJSON } from './types';
 import { type } from '../type';
 import { hasMethod } from '../has-method';
 import { splitPath } from '../split-path';
-import { ObjectValue, PropertyParts, PropertyPath } from '../common-types';
+import { ObjectValue, PropertyParts, PropertyPath } from '../common-types/types';
 
 export function unset<Type>(value: Type, path: PropertyPath | PropertyParts): Type {
-  if (value) {
-    if (hasMethod(value, 'toJSON')) {
-      value = (value as unknown as HasToJSON).toJSON();
-    }
-  }
+  if (hasMethod(value, 'toJSON')) value = value.toJSON() as Type;
   if (value === null || typeof value === 'undefined') return value;
   if (typeof path === 'number') path = [path];
   if (!path) return value;
@@ -19,7 +14,7 @@ export function unset<Type>(value: Type, path: PropertyPath | PropertyParts): Ty
 
   if (currentPath === '*') {
     const t = type(value);
-    // Очистка всех свойств объекта
+    // Clearing all object properties
     if (t === 'object') {
       const source = value as unknown as ObjectValue;
       const keys = Object.keys(source);

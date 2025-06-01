@@ -249,4 +249,19 @@ describe('Test diff()', () => {
       $unset: [],
     });
   });
+
+  test('other types', () => {
+    const first = {
+      number: '10',
+      text: '10',
+      double: 0.3,
+      double2: 12.12345,
+    };
+
+    const second = [1, 2, 3];
+
+    const diffValue = diff(first, second, {});
+
+    expect(diffValue).toEqual([1, 2, 3]);
+  });
 });

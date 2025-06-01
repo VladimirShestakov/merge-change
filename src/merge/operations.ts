@@ -3,13 +3,13 @@ import { set } from '../set';
 import { unset } from '../unset';
 import { type } from '../type';
 import { OperationFn, Operations } from './types';
-import type { ObjectValue, PropertyPath } from '../common-types';
+import type { ObjectValue, PropertyPath } from '../common-types/types';
 
 export const defaultOperations: Record<Operations, OperationFn> = {
   /**
    * $set
    * @param source
-   * @param params Объект со свойствами, которые нужно добавить без слияния. Ключи свойств могут быть путями с учётом вложенности
+   * @param params Object with properties that need to be added without merging. Property keys can be paths taking into account nesting
    * @returns {boolean}
    */
   $set(source: unknown, params: ObjectValue): boolean {
@@ -22,14 +22,14 @@ export const defaultOperations: Record<Operations, OperationFn> = {
 
   /**
    * $unset
-   * Удаление свойств объекта или элементов массива.
+   * Removing object properties or array elements.
    * @param source
-   * @param params Массив путей на удаляемые свойства. Учитывается вложенность
+   * @param params Array of paths to properties to be removed. Nesting is taken into account
    * @returns {boolean}
    */
   $unset(source: unknown, params: PropertyPath[]): boolean {
     if (Array.isArray(params)) {
-      // Перечень полей для удаления
+      // List of fields to remove
       for (const fieldName of params) {
         unset(source, fieldName);
       }
@@ -40,9 +40,9 @@ export const defaultOperations: Record<Operations, OperationFn> = {
 
   /**
    * $leave
-   * Удаление всех свойств или элементов за исключением указанных
+   * Removing all properties or elements except those specified
    * @param source
-   * @param propPaths Массив свойств, которые не надо удалять
+   * @param propPaths Array of properties that should not be removed
    * @returns {boolean}
    */
   $leave(source: unknown, propPaths: string[]): boolean {
@@ -83,7 +83,7 @@ export const defaultOperations: Record<Operations, OperationFn> = {
 
   /**
    * $pull
-   * Удаление элементов по равенству значения
+   * Removing elements by value equality
    * @param source
    * @param params
    * @returns {boolean}
@@ -108,7 +108,7 @@ export const defaultOperations: Record<Operations, OperationFn> = {
 
   /**
    * $push
-   * Добавление элемента
+   * Adding an element
    * @param source
    * @param params
    * @returns {boolean}
@@ -130,7 +130,7 @@ export const defaultOperations: Record<Operations, OperationFn> = {
 
   /**
    * $concat
-   * Слияние элементов массива
+   * Merging array elements
    * @param source
    * @param params
    * @returns {boolean}
