@@ -162,8 +162,6 @@ describe('Test diff()', () => {
       white: ['name', 'profile', 'profile.newSurname', 'profile.surname'],
     });
 
-    console.log(diffValue);
-
     expect(plain(diffValue)).toEqual({
       $set: {
         name: 2,

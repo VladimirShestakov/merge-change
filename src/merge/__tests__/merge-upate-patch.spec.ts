@@ -1,4 +1,5 @@
 import mc from '../index';
+import { Patch } from '../types';
 
 describe('Test merge()', () => {
   test('mergeStringNumber', () => {
@@ -98,14 +99,25 @@ describe('Test merge()', () => {
   });
 
   test('merge', () => {
-    const first = {
+    type TestObject = {
+      field1: {
+        a1?: number;
+        a2?: number;
+        a3?: number;
+      };
+      field2?: {
+        b1?: number;
+        b2?: number;
+      };
+    };
+    const first: TestObject = {
       field1: {
         a1: 10,
         a2: 11,
         a3: 12,
       },
     };
-    const second = {
+    const second: Patch<TestObject> = {
       field2: {
         b2: 20,
       },
@@ -114,10 +126,11 @@ describe('Test merge()', () => {
         $unset: ['a2'],
       },
     };
+
     const result = mc.merge(first, second);
     expect(result === first).toEqual(false);
     expect(result.field1).not.toBe(first.field1);
-    expect(result.field1).not.toBe(second.field1);
+    expect(result.field1).not.toBe(second.$unset);
     expect(result.field2).not.toBe(second.field2);
     expect(result).toEqual({
       field1: {
@@ -130,14 +143,25 @@ describe('Test merge()', () => {
   });
 
   test('patch', () => {
-    const first = {
+    type TestObject = {
+      field1: {
+        a1?: number;
+        a2?: number;
+        a3?: number;
+      };
+      field2?: {
+        b1?: number;
+        b2?: number;
+      };
+    };
+    const first: TestObject = {
       field1: {
         a1: 10,
         a2: 11,
         a3: 12,
       },
     };
-    const second = {
+    const second: Patch<TestObject> = {
       field2: {
         b2: 20,
       },
@@ -202,7 +226,18 @@ describe('Test merge()', () => {
   });
 
   test('update', () => {
-    const first = {
+    type TestObject = {
+      field1: {
+        a1: number;
+        a2: number;
+        a3: { value: number };
+      };
+      field2?: {
+        b1?: number;
+        b2?: number;
+      };
+    };
+    const first: TestObject = {
       field1: {
         a1: 10,
         a2: 11,
@@ -211,7 +246,7 @@ describe('Test merge()', () => {
         },
       },
     };
-    const second = {
+    const second: Patch<TestObject> = {
       field2: {
         b2: 20,
       },
@@ -237,7 +272,15 @@ describe('Test merge()', () => {
   });
 
   test('update 2', () => {
-    const first = {
+    type TestObject = {
+      a: {
+        one?: boolean;
+        two?: number;
+        three?: number;
+        sub: { value: number };
+      };
+    };
+    const first: TestObject = {
       a: {
         one: true,
         two: 2,
@@ -246,7 +289,7 @@ describe('Test merge()', () => {
         },
       },
     };
-    const second = {
+    const second: Patch<TestObject> = {
       a: {
         three: 3,
         $unset: ['one'], // $unset is a declarative operations
@@ -254,7 +297,7 @@ describe('Test merge()', () => {
     };
     const result = mc.update(first, second); // => { a: { two: 2,  three: 3, sub: { value: 3 }} }
 
-    // result is a new object
+    // the result is a new object
     expect(result !== first).toEqual(true);
     expect(result !== second).toEqual(true);
     // Property "a.sub" is immutable

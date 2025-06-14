@@ -19,6 +19,18 @@ type TestObject = {
   g: Array<{ h: number }>;
 };
 
+type TestObjectPartial = {
+  a?: number;
+  b?: {
+    c: string;
+    d: {
+      e?: boolean;
+    };
+  };
+  f?: string[];
+  g?: Array<{ h?: number }>;
+};
+
 // ==================== ExtractPaths Tests ====================
 // Test with dot separator
 type TestPaths = ExtractPaths<TestObject, '.'>;
@@ -57,6 +69,20 @@ const pathSlash7: TestPathsSlash = 'f/0';
 const pathSlash8: TestPathsSlash = 'g';
 const pathSlash9: TestPathsSlash = 'g/0';
 const pathSlash10: TestPathsSlash = 'g/0/h';
+
+type TestPathsPartial = ExtractPaths<TestObjectPartial, '.'>;
+
+// These should be valid paths
+const pathPartial1: TestPathsPartial = 'a';
+const pathPartial2: TestPathsPartial = 'b';
+const pathPartial3: TestPathsPartial = 'b.c';
+const pathPartial4: TestPathsPartial = 'b.d';
+const pathPartial5: TestPathsPartial = 'b.d.e';
+const pathPartial6: TestPathsPartial = 'f';
+const pathPartial7: TestPathsPartial = 'f.0';
+const pathPartial8: TestPathsPartial = 'g';
+const pathPartial9: TestPathsPartial = 'g.0';
+const pathPartial10: TestPathsPartial = 'g.0.h';
 
 // ==================== ExtractPathsStarted Tests ====================
 // Test with dot separator
@@ -148,6 +174,23 @@ const pathLeafSlash2: TestPathsLeafSlash = 'b/c';
 const pathLeafSlash3: TestPathsLeafSlash = 'b/d/e';
 const pathLeafSlash4: TestPathsLeafSlash = 'f';
 
+// Test with dot separator
+type TestPathsPartialLeaf = ExtractPathsLeaf<TestObjectPartial, '.'>;
+
+// These should be the only valid paths
+const pathPartialLeaf1: TestPathsPartialLeaf = 'a';
+const pathPartialLeaf2: TestPathsPartialLeaf = 'b.c';
+const pathPartialLeaf3: TestPathsPartialLeaf = 'b.d.e';
+const pathPartialLeaf4: TestPathsPartialLeaf = 'f';
+
+// These should not be valid paths
+// @ts-expect-error - 'b' is not a leaf path
+const invalidPartialPath1: TestPathsPartialLeaf = 'b';
+// @ts-expect-error - 'b.d' is not a leaf path
+const invalidPartialPath2: TestPathsPartialLeaf = 'b.d';
+// @ts-expect-error - 'f.0' is not a valid path (array elements are not considered)
+const invalidPartialPath3: TestPathsPartialLeaf = 'f.0';
+
 // ==================== PathToType Tests ====================
 // Test with dot separator
 // Simple property access
@@ -186,7 +229,22 @@ const bdeValueSlash: BDETypeSlash = true; // Should be boolean
 type LeadingSepType = PathToType<TestObject, '.a', '.'>;
 const leadingSepValue: LeadingSepType = 42; // Should be number
 
-// Invalid paths should result in never
+// Invalid paths should result in undefined
 type InvalidType = PathToType<TestObject, 'x', '.'>;
-// @ts-expect-error - 'x' is not a valid path, so type should be never
+// @ts-expect-error - 'x' is not a valid path, so type should be undefined
 const invalidValue: InvalidType = 42;
+
+// Test with an empty string path
+type EmptyPathType = PathToType<TestObject, '', '.'>;
+// Should be the original object type
+const emptyPathValue: EmptyPathType = {
+  a: 42,
+  b: {
+    c: 'test',
+    d: {
+      e: true,
+    },
+  },
+  f: ['test'],
+  g: [{ h: 42 }],
+};

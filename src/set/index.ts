@@ -1,4 +1,6 @@
 import { splitPath } from '../split-path';
+import { hasMethod } from '../has-method';
+import { ExtractPathsAny, PathToType, PropertyPath } from '../common-types/types';
 
 /**
  * Sets a value at the specified path. If the path is not found in obj, the corresponding property will be created
@@ -9,31 +11,44 @@ import { splitPath } from '../split-path';
  * @param separator - Separator in a property path
  * @returns Previous value at the specified path
  */
-export function set(
-  obj: any,
-  path: any,
-  value: any,
+export function set<D, P extends ExtractPathsAny<D, S>, S extends string = '.'>(
+  obj: D,
+  path: P,
+  value: unknown,
   skipExisting: boolean = false,
-  separator: string = '.',
-): any {
-  if (obj && typeof obj.toJSON === 'function') obj = obj.toJSON();
-  if (typeof path === 'number') path = [path];
-  if (!path || !path.length) return obj;
-  if (!Array.isArray(path)) {
-    return set(obj, splitPath(path, separator), value, skipExisting, separator);
-  }
-  const currentPath = path[0];
-  const currentValue = obj[currentPath];
-  if (path.length === 1) {
-    // If it's the last element of the path, set the value
-    if (!skipExisting || currentValue === void 0) {
-      obj[currentPath] = value;
+  separator: S = '.' as S,
+): PathToType<D, P, S> {
+  const parts = splitPath(path, separator);
+
+  if (parts.length === 0) return obj as PathToType<D, P, S>;
+
+  let current = obj as Record<PropertyPath, unknown>;
+
+  // Traverse the object using parts until the last part
+  for (let i = 0; i < parts.length - 1; i++) {
+    const part = parts[i];
+
+    if (current[part] === undefined || current[part] === null) {
+      // Create an object or array based on the next part
+      const nextPart = parts[i + 1];
+      current[part] = typeof nextPart === 'number' ? [] : {};
     }
-    return currentValue;
+
+    const nextValue = current[part];
+    current = (hasMethod(nextValue, 'toJSON') ? nextValue.toJSON() : nextValue) as Record<
+      PropertyPath,
+      unknown
+    >;
   }
-  // If the path continues but the current element doesn't exist, an empty object is created
-  if (currentValue === void 0) {
-    obj[currentPath] = {};
+
+  // Update the final property
+  const lastPart = parts[parts.length - 1];
+  const currentValue = current[lastPart];
+
+  // If it's the last element of the path, set the value
+  if (!skipExisting || currentValue === void 0) {
+    current[lastPart] = value;
   }
-  return set(obj[currentPath], path.slice(1), value, skipExisting, separator);
+
+  return currentValue as PathToType<D, P, S>;
 }

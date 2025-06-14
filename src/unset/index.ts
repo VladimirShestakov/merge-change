@@ -1,14 +1,17 @@
 import { type } from '../type';
-import { hasMethod } from '../has-method';
 import { splitPath } from '../split-path';
-import { ObjectValue, PropertyParts, PropertyPath } from '../common-types/types';
+import {
+  ExtractPathsAny,
+  ExtractPathsAsterisk,
+  ObjectValue,
+  PropertyParts,
+} from '../common-types/types';
 
-export function unset<Type>(
-  value: Type,
-  path: PropertyPath | PropertyParts,
-  separator: string = '.',
-): Type {
-  if (hasMethod(value, 'toJSON')) value = value.toJSON() as Type;
+export function unset<
+  D,
+  P extends ExtractPathsAny<D, S> | ExtractPathsAsterisk<D, S>,
+  S extends string = '.',
+>(value: D, path: P | PropertyParts, separator: S = '.' as S): D {
   if (value === null || typeof value === 'undefined') return value;
   if (typeof path === 'number') path = [path];
   if (!path) return value;
@@ -49,7 +52,7 @@ export function unset<Type>(
     if (path[1] === '*' && t !== 'object' && t !== 'Array') {
       obj[currentPath] = undefined;
     } else {
-      return unset(nextValue as unknown as Type, path.slice(1), separator);
+      return unset(nextValue as unknown as D, path.slice(1), separator);
     }
   }
   return value;

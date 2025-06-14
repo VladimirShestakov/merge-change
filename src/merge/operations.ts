@@ -12,7 +12,7 @@ export const defaultOperations: Record<Operations, OperationFn> = {
    * @param params Object with properties that need to be added without merging. Property keys can be paths taking into account nesting
    * @returns {boolean}
    */
-  $set(source: unknown, params: ObjectValue): boolean {
+  $set(source: ObjectValue, params: ObjectValue): boolean {
     const fieldNames = Object.keys(params);
     for (const fieldName of fieldNames) {
       set(source, fieldName, params[fieldName]);
@@ -27,11 +27,11 @@ export const defaultOperations: Record<Operations, OperationFn> = {
    * @param params Array of paths to properties to be removed. Nesting is taken into account
    * @returns {boolean}
    */
-  $unset(source: unknown, params: PropertyPath[]): boolean {
+  $unset(source: ObjectValue, params: PropertyPath[]): boolean {
     if (Array.isArray(params)) {
       // List of fields to remove
       for (const fieldName of params) {
-        unset(source, fieldName);
+        unset(source, fieldName as string);
       }
       return params.length > 0;
     }

@@ -1,57 +1,66 @@
-import { plain } from '../plain';
 import { get } from '../get';
 import { flat } from '../flat';
 
 /**
  * Checking properties in an object. Nested properties are specified using a path to them through separator
- * @param value {Object} Object to check, which should contain condition properties
- * @param condition {Object} Target object, all properties of which should be in value
- * @param [data] {Object} Data for substitution in the condition template. For example, '$session.user.name' in condition will be substituted with the value from data.session.user.name
- * @param [separator='.'] Separator for templated value
- * @param [errors] {Array} If an array is passed, the names of properties that don't match will be added to it
- * @returns {boolean}
+ * @param value Object to check, which should contain condition properties
+ * @param condition Target object, all properties of which should be in value
+ * @param data Data for substitution in the condition template. For example, '$session.user.name' in condition will be substituted with the value from data.session.user.name
+ * @param separator Separator for templated value
+ * @param errors If an array is passed, the names of properties that don't match will be added to it
+ * @returns Whether the value matches the condition
  */
 export function match(
-  value: any,
-  condition: any = {},
-  data: any = {},
+  value: unknown,
+  condition: unknown = {},
+  data: Record<string, unknown> = {},
   separator: string = '.',
-  errors: any = undefined,
+  errors?: string[],
 ): boolean {
   let result = true;
-  const flatValue = plain(flat(value, separator));
-  if (typeof condition !== 'object') {
+  const flatValue = flat(value, separator) as Record<string, unknown>;
+
+  if (typeof condition !== 'object' || condition === null) {
     return condition === flatValue;
   }
-  const keys = Object.keys(condition);
+
+  const conditionObj = condition as Record<string, unknown>;
+  const keys = Object.keys(conditionObj);
+
   for (const key of keys) {
-    if (condition[key] !== flatValue[key]) {
+    const conditionValue = conditionObj[key];
+    const valueAtKey = key in flatValue ? flatValue[key] : undefined;
+
+    if (conditionValue !== valueAtKey) {
       // templated value
-      if (typeof condition[key] === 'string' && condition[key].substr(0, 1) === '$') {
-        const realCondition = get(data, condition[key].substr(1), undefined, separator);
-        if (realCondition === flatValue[key] && key in flatValue) {
+      if (typeof conditionValue === 'string' && conditionValue.startsWith('$')) {
+        const realCondition = get(data, conditionValue.substring(1), undefined, separator);
+        if (realCondition === valueAtKey && key in flatValue) {
           break;
         }
       }
+
       let arrayEq = false;
       if (
-        Array.isArray(condition[key]) &&
-        Array.isArray(flatValue[key]) &&
-        condition[key].length === flatValue[key].length
+        Array.isArray(conditionValue) &&
+        Array.isArray(valueAtKey) &&
+        conditionValue.length === valueAtKey.length
       ) {
         arrayEq = true; // possibly match
-        for (let i = 0; i < condition[key].length; i++) {
-          if (!match(flatValue[key][i], condition[key][i], data, separator)) {
+        for (let i = 0; i < conditionValue.length; i++) {
+          if (!match(valueAtKey[i], conditionValue[i], data, separator)) {
             arrayEq = false;
             break;
           }
         }
       }
+
       if (!arrayEq) {
         if (errors) errors.push(key);
         result = false;
       }
     }
   }
+
   return result;
 }

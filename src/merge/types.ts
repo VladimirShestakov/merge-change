@@ -1,4 +1,5 @@
 import { Type } from '../type/types';
+import type { PropertyPath } from '../common-types/types';
 
 export enum Operations {
   '$set' = '$set',
@@ -64,12 +65,12 @@ export type Merged<T, U> = U extends undefined
     : T extends NotMerged
       ? U
       : {
-          [K in Exclude<keyof T | keyof U, Operations>]: K extends keyof T & keyof U
-            ? Merged<T[K], U[K]>
+          [K in Exclude<keyof T, Operations>]: K extends keyof T & keyof Required<U>
+            ? Merged<T[K], Required<U>[K]>
             : K extends keyof T
               ? T[K]
-              : K extends keyof U
-                ? U[K]
+              : K extends keyof Required<U>
+                ? Required<U>[K]
                 : never;
         };
 
@@ -82,3 +83,21 @@ export type MergedAll<T extends any[]> = T extends [infer First, infer Second, .
     : never;
 
 export type MergeChangeFn = <T extends any[]>(...values: T) => MergedAll<T>;
+
+/**
+ * Объект-патч с необязательными свойствами в глубину и с операциями для merge-change
+ */
+export type PatchOperation<T> = {
+  $set?: Partial<T>;
+  $unset?: PropertyPath[];
+  $leave?: PropertyPath[];
+  $pull?: Record<PropertyPath, unknown>;
+  $push?: Record<PropertyPath, unknown>;
+  $concat?: Record<PropertyPath, unknown>;
+};
+
+export type Patch<T> = T extends (infer U)[]
+  ? U[]
+  : T extends { [key: string | number | symbol]: unknown }
+    ? PatchOperation<T> & { [K in keyof T]?: Patch<T[K]> } // Для объектов: операции + рекурсивный патч
+    : T; // Для примитивов: сам тип

@@ -3,10 +3,25 @@ import { plain } from '../../plain';
 
 describe('Test unset()', () => {
   class Custom {
-    protected value: any;
+    protected value: {
+      name?: string;
+      sub?: {
+        prop: {
+          inner: number;
+        };
+      };
+    };
 
     constructor(value = {}) {
       this.value = value;
+    }
+
+    get name() {
+      return this.value.name;
+    }
+
+    get sub() {
+      return this.value.sub;
     }
 
     toJSON() {
