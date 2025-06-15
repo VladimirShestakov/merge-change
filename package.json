@@ -1,6 +1,6 @@
 {
   "name": "merge-change",
-  "version": "3.0.2",
+  "version": "3.0.5",
   "description": "Advanced library for deep merging, patching, and immutable updates of data structures. Features declarative operations for specific merging behaviors, property management, custom type merging rules, and difference tracking. Supports complex data transformations with a simple API.",
   "import": "./lib/esm/index.js",
   "require": "./lib/cjs/index.js",

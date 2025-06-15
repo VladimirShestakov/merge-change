@@ -1,5 +1,6 @@
 import { Type } from '../type/types';
-import type { PropertyPath } from '../common-types/types';
+import { ExtractPaths } from '../common-types/types';
+import { FlatObject } from '../flat/types';
 
 export enum Operations {
   '$set' = '$set',
@@ -84,20 +85,25 @@ export type MergedAll<T extends any[]> = T extends [infer First, infer Second, .
 
 export type MergeChangeFn = <T extends any[]>(...values: T) => MergedAll<T>;
 
-/**
- * Объект-патч с необязательными свойствами в глубину и с операциями для merge-change
- */
+export type PartialDeep<T> = T extends (infer U)[]
+  ? PartialDeep<U>[]
+  : T extends { [key: string | number | symbol]: unknown }
+    ? { [K in keyof T]?: PartialDeep<T[K]> }
+    : Partial<T>;
+
 export type PatchOperation<T> = {
-  $set?: Partial<T>;
-  $unset?: PropertyPath[];
-  $leave?: PropertyPath[];
-  $pull?: Record<PropertyPath, unknown>;
-  $push?: Record<PropertyPath, unknown>;
-  $concat?: Record<PropertyPath, unknown>;
+  $set?: Partial<T | FlatObject<T>>;
+  $unset?: ExtractPaths<T, '.'>[];
+  $leave?: ExtractPaths<T, '.'>[];
+  $pull?: Record<ExtractPaths<T, '.'>, unknown>;
+  $push?: Record<ExtractPaths<T, '.'>, unknown>;
+  $concat?: Record<ExtractPaths<T, '.'>, unknown>;
 };
 
-export type Patch<T> = T extends (infer U)[]
-  ? U[]
-  : T extends { [key: string | number | symbol]: unknown }
-    ? PatchOperation<T> & { [K in keyof T]?: Patch<T[K]> } // Для объектов: операции + рекурсивный патч
-    : T; // Для примитивов: сам тип
+export type Patch<T> =
+  | PartialDeep<T>
+  | (T extends (infer U)[]
+      ? Patch<U>[]
+      : T extends { [key: string | number | symbol]: unknown }
+        ? PatchOperation<T> & { [K in keyof T]?: Patch<T[K]> } // Для объектов: операции + рекурсивный патч
+        : Partial<T>); // Для примитивов: сам тип

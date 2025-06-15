@@ -2,6 +2,8 @@ import mc from './merge';
 
 export default mc;
 
+export * from './merge';
+
 export * from './diff';
 
 export * from './flat';
@@ -21,3 +23,5 @@ export * from './split-path';
 export * from './type';
 
 export * from './unset';
+
+export * from './types';

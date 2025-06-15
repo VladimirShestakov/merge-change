@@ -31,7 +31,12 @@ const patch: TestPatch = {
       y: 20,
     },
   },
+  $set: {
+    'inner.y': 3,
+  },
 };
+
+const patch2: TestPatch = {};
 
 const partial: Partial<TestPatch> = {
   inner: {
@@ -51,3 +56,12 @@ const result5: TestObject = merge(value, { $set: { inner: { y: 20 } } });
 
 // @ts-expect-error - 'string' is not a valid type for x
 const result6: TestObject = merge(value, { x: 'string' });
+
+interface Env {
+  [key: string]: any;
+
+  PROD: boolean;
+  DEV: boolean;
+}
+
+const envPatch: Patch<Env> = {};
