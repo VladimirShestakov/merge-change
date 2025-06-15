@@ -61,19 +61,21 @@ export type NotMerged =
 
 export type Merged<T, U> = U extends undefined
   ? T
-  : U extends NotMerged
-    ? U
-    : T extends NotMerged
+  : T extends (...args: any[]) => any
+    ? T // Функции остаются неизменными
+    : U extends NotMerged
       ? U
-      : {
-          [K in Exclude<keyof T, Operations>]: K extends keyof T & keyof Required<U>
-            ? Merged<T[K], Required<U>[K]>
-            : K extends keyof T
-              ? T[K]
-              : K extends keyof Required<U>
-                ? Required<U>[K]
-                : never;
-        };
+      : T extends NotMerged
+        ? U
+        : {
+            [K in Exclude<keyof T, Operations>]: K extends keyof T & keyof Required<U>
+              ? Merged<T[K], Required<U>[K]>
+              : K extends keyof T
+                ? T[K]
+                : K extends keyof Required<U>
+                  ? Required<U>[K]
+                  : never;
+          };
 
 export type MergedAll<T extends any[]> = T extends [infer First, infer Second, ...infer Rest]
   ? Rest extends any[]
@@ -85,11 +87,13 @@ export type MergedAll<T extends any[]> = T extends [infer First, infer Second, .
 
 export type MergeChangeFn = <T extends any[]>(...values: T) => MergedAll<T>;
 
-export type PartialDeep<T> = T extends (infer U)[]
-  ? PartialDeep<U>[]
-  : T extends { [key: string | number | symbol]: unknown }
-    ? { [K in keyof T]?: PartialDeep<T[K]> }
-    : Partial<T>;
+export type PartialDeep<T> = T extends (...args: any[]) => any
+  ? T // Функции остаются неизменными
+  : T extends (infer U)[]
+    ? PartialDeep<U>[]
+    : T extends { [key: string | number | symbol]: unknown }
+      ? { [K in keyof T]?: PartialDeep<T[K]> }
+      : Partial<T>;
 
 export type PatchOperation<T> = {
   $set?: Partial<T | FlatObject<T>>;
@@ -102,8 +106,10 @@ export type PatchOperation<T> = {
 
 export type Patch<T> =
   | PartialDeep<T>
-  | (T extends (infer U)[]
-      ? Patch<U>[]
-      : T extends { [key: string | number | symbol]: unknown }
-        ? PatchOperation<T> & { [K in keyof T]?: Patch<T[K]> } // Для объектов: операции + рекурсивный патч
-        : Partial<T>); // Для примитивов: сам тип
+  | (T extends (...args: any[]) => any
+      ? T // Функции остаются неизменными
+      : T extends (infer U)[]
+        ? Patch<U>[]
+        : T extends { [key: string | number | symbol]: unknown }
+          ? PatchOperation<T> & { [K in keyof T]?: Patch<T[K]> }
+          : PartialDeep<T>);

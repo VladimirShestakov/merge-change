@@ -9,6 +9,7 @@ type TestObject = {
     sub: {
       title: string;
     };
+    f?: (a: number) => Promise<number>;
   };
 };
 
